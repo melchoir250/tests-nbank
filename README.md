@@ -51,22 +51,3 @@ tests-nbank/
     ├── ui/                            # UI-автотесты 
     └── constants/                     # лимиты сумм / имён для параметризации
 ```
-
----
-
-## Запуск API-тестов
-
-Бэкенд должен быть на `localhost:4111`:
-
-```bash
-mvn test
-```
-
-Один класс / весь пакет:
-
-```bash
-mvn test -Dtest=api.DepositAccountTest
-mvn test -Dtest=api.TransferMoneyTest
-mvn test -Dtest=api.UpdateProfileNameTest
-mvn test -Dtest=api.*
-```
