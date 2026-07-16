@@ -1,0 +1,15 @@
+package models;
+
+import lombok.Data;
+import lombok.Builder;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class LoginUserResponse extends BaseModel {
+    private String username;
+    private String role;
+}

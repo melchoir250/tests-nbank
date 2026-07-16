@@ -1,0 +1,36 @@
+# Изменение имени пользователя
+
+### Позитивный кейс изменение имени на корректное
+
+Предусловия (API):
+1. Админ создает USER (POST /api/v1/admin/users)
+2. Логин (POST /api/v1/auth/login), Authorization в localStorage
+3. GET /api/v1/customer/profile - name = null
+
+Шаги (UI):
+1. Открыть /dashboard
+2. В хедере кликнуть по noname
+3. Открылась Edit Profile
+4. В Enter new name ввести "Ivan Petrov"
+5. Нажать Save Changes
+
+Проверки:
+1. UI - алерт: Name updated successfully!
+2. UI - в хедере и в Welcome отображается Ivan Petrov
+3. API - GET /api/v1/customer/profile, name = "Ivan Petrov"
+
+### Негативный кейс изменение имени на цифру в имени
+
+Предусловия (API):
+1. Создать USER + логин + токен в localStorage
+2. GET /api/v1/customer/profile - name = null
+
+Шаги (UI):
+1. /dashboard → клик по имени в хедере → Edit Profile
+2. В Enter new name ввести "Petrov1"
+3. Save Changes
+
+Проверки:
+1. UI - алерт: Name must contain two words with letters only
+2. UI - имя на dashboard не сменилось на Petrov1
+3. API - GET /api/v1/customer/profile, name как было до шага (null или "Ivan Petrov")

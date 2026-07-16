@@ -1,0 +1,38 @@
+# Депозит денег пользователем
+
+### Позитивный кейс пополнение аккаунта
+
+Предусловия (API):
+1. Админ создает пользователя role=USER (POST /api/v1/admin/users)
+2. Логинимся под этим юзером (POST /api/v1/auth/login), Authorization кладем в localStorage
+3. Создаем аккаунт (POST /api/v1/accounts), сохраняем id и accountNumber
+4. Стартовый баланс = 0 (GET /api/v1/customer/accounts)
+
+Шаги (UI):
+1. Открыть /dashboard, видим User Dashboard
+2. Нажать Deposit Money
+3. В Select Account выбрать созданный аккаунт (например ACC1 (Balance: $0.00))
+4. В Enter Amount ввести 1000
+5. Нажать Deposit
+
+Проверки:
+1. UI - алерт: Successfully deposited $1000 to account <accountNumber>!
+2. UI - после успеха редирект на /dashboard (на Deposit не остаемся)
+3. API - GET /api/v1/customer/accounts, у нашего id balance = 1000
+
+### Негативный кейс пополнение сверх лимита
+
+Предусловия (API):
+1. Создать USER + логин + токен в localStorage
+2. Создать аккаунт, баланс 0
+
+Шаги (UI):
+1. /dashboard → Deposit Money
+2. Выбрать свой аккаунт
+3. В Enter Amount ввести 5001
+4. Нажать Deposit
+
+Проверки:
+1. UI - алерт: Please deposit less or equal to 5000$.
+2. UI - остаемся на /deposit, редиректа нет
+3. API - GET /api/v1/customer/accounts, balance не изменился

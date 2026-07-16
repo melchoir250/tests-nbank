@@ -1,0 +1,384 @@
+Итерация 2:
+1. Депозит денег пользователем
+2. Перевод денег с одного аккаунта на другой
+3. Изменение имени пользователя
+
+
+# Депозит денег пользователем
+### Авторизация
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin"
+}
+
+### Создание пользователя
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+  "username": "ivan992",
+  "password": "ivan992IVAN!",
+  "role": "USER"
+}
+
+### Авторизация пользователем
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "ivan992",
+  "password": "ivan992IVAN!"
+}
+
+### Создание аккаунта
+POST http://localhost:4111/api/v1/accounts
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+
+### Создание депозита
+POST http://localhost:4111/api/v1/accounts/deposit
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "id": 1,
+  "balance": 1000
+}
+
+### Проверка что депозит получен
+GET http://localhost:4111/api/v1/customer/accounts
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+
+### Позитивный кейс создание депозита с копейками
+POST http://localhost:4111/api/v1/accounts/deposit
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "id": 1,
+  "balance": 100.5
+}
+
+### Позитивный кейс создание депозита с максимальной суммой
+POST http://localhost:4111/api/v1/accounts/deposit
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "id": 1,
+  "balance": 5000
+}
+
+### Позитивный кейс создание депозита с предмаксимальной суммой
+POST http://localhost:4111/api/v1/accounts/deposit
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "id": 1,
+  "balance": 4999.99
+}
+
+### Негативный кейс создание депозита с отрицательной суммой
+POST http://localhost:4111/api/v1/accounts/deposit
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "id": 1,
+  "balance": -10
+}
+
+### Негативный кейс создание депозита с нулевой суммой
+POST http://localhost:4111/api/v1/accounts/deposit
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "id": 1,
+  "balance": 0
+}
+
+### Негативный кейс создание депозита с превышением лимита
+POST http://localhost:4111/api/v1/accounts/deposit
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "id": 1,
+  "balance": 5001
+}
+
+### Негативный кейс создание депозита с несуществующим id
+POST http://localhost:4111/api/v1/accounts/deposit
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "id": 100,
+  "balance": 100
+}
+
+### Негативный кейс создание депозита без авторизации
+POST http://localhost:4111/api/v1/accounts/deposit
+accept: */*
+Content-Type: application/json
+
+{
+  "id": 1,
+  "balance": 100
+}
+
+# Перевод денег с одного аккаунта на другой
+
+### Создание пользователя
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+  "username": "ivan993",
+  "password": "ivan993IVAN!",
+  "role": "USER"
+}
+
+### Авторизация пользователем
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "ivan993",
+  "password": "ivan993IVAN!"
+}
+
+### Создание аккаунта
+POST http://localhost:4111/api/v1/accounts
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+
+### Авторизация пользователем
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "ivan992",
+  "password": "ivan992IVAN!"
+}
+
+### Позитивный кейс перевода денег от одного пользователя другому
+POST http://localhost:4111/api/v1/accounts/transfer
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 2,
+  "amount": 50
+}
+
+### Позитивный кейс перевода денег от одного пользователя другому минимальная сумма
+POST http://localhost:4111/api/v1/accounts/transfer
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 2,
+  "amount": 0.01
+}
+
+### Позитивный кейс перевода денег от одного пользователя другому максимальная сумма
+POST http://localhost:4111/api/v1/accounts/transfer
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 2,
+  "amount": 10000
+}
+
+### Позитивный кейс перевода денег от одного пользователя другому предмаксимальная сумма
+POST http://localhost:4111/api/v1/accounts/transfer
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 2,
+  "amount": 9999.99
+}
+
+### Негативный кейс перевода денег от одного пользователя другому нулевая сумма
+POST http://localhost:4111/api/v1/accounts/transfer
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 2,
+  "amount": 0
+}
+
+### Негативный кейс перевода денег от одного пользователя другому отрицательная сумма
+POST http://localhost:4111/api/v1/accounts/transfer
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 2,
+  "amount": -10
+}
+
+### Негативный кейс перевода денег от одного пользователя другому превышение лимита
+POST http://localhost:4111/api/v1/accounts/transfer
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 2,
+  "amount": 10001
+}
+
+# Изменение имени пользователя
+
+### Авторизация
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin"
+}
+
+### Создание пользователя
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+  "username": "ivan992",
+  "password": "ivan992IVAN!",
+  "role": "USER"
+}
+
+### Авторизация пользователем
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "ivan992",
+  "password": "ivan992IVAN!"
+}
+
+### Создание аккаунта
+POST http://localhost:4111/api/v1/accounts
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+
+### Получение информации о пользователе
+GET http://localhost:4111/api/v1/customer/profile
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+
+### Позитивный кейс изменение имени на корректное
+PUT http://localhost:4111/api/v1/customer/profile
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "name": "Ivan Petrov"
+}
+
+### Позитивный кейс изменение имени на корректное по 1 символу
+PUT http://localhost:4111/api/v1/customer/profile
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "name": "I P"
+}
+
+### Позитивный кейс изменение имени на корректное 200 символов(общее)
+PUT http://localhost:4111/api/v1/customer/profile
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "name": "Zephyrinus-Xanthippe Montgomery-Smytheweatherington von der Leckermaulhausen St. Clair-Fotheringay-Phipps-Beddington-Smythe-Jones-Worthington-Scales-Weatherby"
+}
+
+### Негативный кейс изменение имени на пустое
+PUT http://localhost:4111/api/v1/customer/profile
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+### Негативный кейс изменение имени на цифру в имени
+PUT http://localhost:4111/api/v1/customer/profile
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "name": "Petrov1"
+}
+
+### Негативный кейс изменение имени на спец.символы в имени
+PUT http://localhost:4111/api/v1/customer/profile
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "name": "Petrov!"
+}
+
+### Негативный кейс изменение имени на более 200 символов
+PUT http://localhost:4111/api/v1/customer/profile
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "name": "Zephyrinus-Xanthippe Montgomery-Smytheweatherington von der Leckermaulhausen St. Clair-Fotheringay-Phipps-Beddington-Smythe-Jones-Worthington-Scales-Weatherbyа"
+}
+
+### Негативный кейс изменение имени на 3 слова
+PUT http://localhost:4111/api/v1/customer/profile
+accept: */*
+Authorization: Basic aXZhbjk5MjppdmFuOTkySVZBTiE=
+Content-Type: application/json
+
+{
+  "name": "Ivan Petrov Jr"
+}

@@ -1,0 +1,83 @@
+# Перевод денег с одного аккаунта на другой
+
+### Позитивный кейс перевода денег
+
+Предусловия (API):
+1. Админ создает user1 (USER), логин, Authorization в localStorage
+2. Создаем аккаунт user1 (senderAccountId), депозит 1000 (POST /api/v1/accounts/deposit)
+3. Админ создает user2 (USER), логин
+4. Создаем аккаунт user2 (receiverAccountId)
+5. Запоминаем accountNumber и name получателя
+
+Шаги (UI) - под user1:
+1. Открыть /dashboard
+2. Нажать Make a Transfer
+3. Choose an account → senderAccountId
+4. Enter recipient name → имя user2 (если задано)
+5. Enter recipient account number → accountNumber user2
+6. Enter amount → 50
+7. Поставить Confirm details are correct
+8. Send Transfer
+
+Проверки:
+1. UI - Successfully transferred $50 to account <accountNumber user2>!
+2. UI - у sender баланс 950, у receiver (если виден) +50
+3. API - GET /api/v1/customer/accounts под user1: balance sender = 950
+4. API - GET /api/v1/customer/accounts под user2: balance receiver = 50
+
+### Негативный кейс перевода с превышением лимита
+
+Предусловия (API):
+1. user1 + аккаунт, депозит несколько раз до баланса 15000 (как в API тестах: 5000+5000+5000)
+2. user2 + аккаунт
+3. Токен user1 в localStorage
+
+Шаги (UI):
+1. /dashboard → Make a Transfer
+2. Выбрать sender, заполнить recipient name + account number user2
+3. Amount = 10001
+4. Confirm details are correct
+5. Send Transfer
+
+Проверки:
+1. UI - ошибка про лимит (Transfer amount cannot exceed 10000)
+2. API - GET accounts user1: balance = 15000
+3. API - GET accounts user2: balance = 0
+
+### Негативный кейс перевода без Confirm
+
+Предусловия (API):
+1. user1 с депозитом 1000, user2 с аккаунтом
+2. Токен user1 в localStorage
+
+Шаги (UI):
+1. Make a Transfer
+2. Заполнить sender, recipient, amount = 50
+3. Чекбокс Confirm НЕ ставить
+4. Send Transfer
+
+Проверки:
+1. UI - Please fill all fields and confirm.
+2. API - GET accounts user1: balance = 1000
+3. API - GET accounts user2: balance = 0
+
+### Позитивный кейс повторный перевод (Transfer Again)
+
+Предусловия (API):
+1. Уже был успешный перевод 50 с user1 на user2 (можно через UI или POST /api/v1/accounts/transfer)
+2. Токен user1 в localStorage
+3. Балансы после первого перевода: sender 950, receiver 50
+
+Шаги (UI):
+1. /dashboard → Make a Transfer → Transfer Again
+2. В Matching Transactions найти TRANSFER_OUT на 50
+3. Нажать Repeat
+4. В модалке проверить: получатель, sender, amount = 50
+5. Confirm details are correct
+6. Send Transfer
+
+Проверки:
+1. UI - Transfer of $50 successful...
+2. UI - в Matching Transactions еще одна TRANSFER_OUT на 50
+3. API - GET accounts user1: balance = 900
+4. API - GET accounts user2: balance = 100

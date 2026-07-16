@@ -1,0 +1,118 @@
+# --- IDE settings (IntelliJ IDEA, Aqua, VSCode)
+.idea/
+*.iml
+.vscode/
+*.ipr
+*.iws
+
+# --- Build output directories
+out/
+build/
+target/
+bin/
+dist/
+classes/
+
+# --- MacOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# --- Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# --- Logs
+*.log
+*.log.*
+log/
+logs/
+
+# --- Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+~$*
+*.bak
+*.orig
+
+# --- Compiled class files
+*.class
+
+# --- Java package artifacts
+*.jar
+*.war
+*.ear
+
+# --- Gradle / Maven
+.gradle/
+.mvn/
+!gradle/wrapper/gradle-wrapper.jar
+!**/gradle-wrapper.jar
+build.gradle
+gradlew
+gradlew.bat
+
+# --- Environment & configuration
+.env
+*.env
+*.properties
+!src/main/resources/config.properties
+!src/main/resources/model-comparison.properties
+*.config
+
+# --- JetBrains caches
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/dictionaries
+.idea/**/shelf/
+.idea/**/libraries/
+.idea/**/httpRequests/
+
+# --- Misc cache
+*.cache
+*.classdata
+
+# --- Java user-specific files
+*.jfr
+*.hprof
+
+# --- Python leftovers (если случайно создавались)
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+__init__.py
+
+# --- System backups from editors
+*.orig
+*.rej
+*.bak
+
+# --- Archive files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# --- Coverage / test reports
+*.coverage
+*.lcov
+coverage/
+test-output/
+reports/
+.allure/
+
+# --- Local tools / experiments
+sandbox/
+tmp/
+temp/
+# --- Test reports
+allure-results/
+allure-report/
+test-output/
+playwright-report/
