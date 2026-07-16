@@ -4,7 +4,7 @@
 
 **API:** `http://localhost:4111`  
 **UI:** `http://localhost:3000`  
-**Стек:** Java 25, JUnit 5, Maven, RestAssured, AssertJ, Selenide (UI — в работе)
+**Стек:** Java 25, JUnit 5, Maven, RestAssured, AssertJ, Selenide
 
 ---
 
