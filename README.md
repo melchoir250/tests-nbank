@@ -70,15 +70,3 @@ mvn test -Dtest=api.TransferMoneyTest
 mvn test -Dtest=api.UpdateProfileNameTest
 mvn test -Dtest=api.*
 ```
-
----
-
-## Что уже есть
-
-| Область | Статус |
-|---------|--------|
-| API design (`requests/api`) | ✅ |
-| UI design (`requests/ui`) | ✅ |
-| API autotests (deposit / transfer / profile) | ✅ |
-| UI autotests (Selenide) | ⏳ stub |
-| Docker / CI | ⏳ позже |
