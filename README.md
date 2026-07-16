@@ -22,7 +22,7 @@
 
 ```
 tests-nbank/
-├── requests/                          # дизайн кейсов (ещё не код)
+├── requests/                          # дизайн кейсов
 │   ├── api/
 │   │   └── iteration2.http            # hw_18: deposit / transfer / profile
 │   └── ui/                            # hw_22
@@ -31,7 +31,7 @@ tests-nbank/
 │       ├── transfer_tests
 │       └── profile_tests
 │
-├── src/main/java/                     # каркас (в основном из hw_20 + hw_21)
+├── src/main/java/
 │   ├── configs/                       # config.properties → PROPERTY
 │   ├── generators/                    # RandomData, RandomModelGenerator
 │   ├── models/                        # request/response DTO
@@ -43,12 +43,12 @@ tests-nbank/
 │   └── ui/pages/                      # Page Objects (пока stub под Selenide)
 │
 └── src/test/java/
-    ├── api/                           # API-автотесты (сценарии hw_18, каркас hw_21)
+    ├── api/                           # API-автотесты
     │   ├── BaseApiTest.java
     │   ├── DepositAccountTest.java
     │   ├── TransferMoneyTest.java
     │   └── UpdateProfileNameTest.java
-    ├── ui/                            # UI-автотесты (пока BaseUiTest stub)
+    ├── ui/                            # UI-автотесты 
     └── constants/                     # лимиты сумм / имён для параметризации
 ```
 
