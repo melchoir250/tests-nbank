@@ -24,8 +24,8 @@ import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.chrome.ChromeOptions;
 import com.codeborne.selenide.Configuration;
 import constants.DepositLimits;
-import generators.RandomData;
-import requests.steps.CustomerContext;
+import api.generators.RandomData;
+import api.requests.steps.CustomerContext;
 
 @DisplayName("UI / Deposit Money")
 class DepositAccountUiTest {

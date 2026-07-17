@@ -28,8 +28,8 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import com.codeborne.selenide.Configuration;
 
 import constants.ProfileLimits;
-import generators.RandomData;
-import requests.steps.CustomerContext;
+import api.generators.RandomData;
+import api.requests.steps.CustomerContext;
 
 @DisplayName("UI / Edit Profile")
 class UpdateProfileNameUiTest {

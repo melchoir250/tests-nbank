@@ -6,9 +6,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import constants.ProfileLimits;
-import generators.RandomData;
-import requests.steps.CustomerContext;
-import requests.steps.UserSteps;
+import api.generators.RandomData;
+import api.requests.steps.CustomerContext;
+import api.requests.steps.UserSteps;
 
 @DisplayName("PUT /api/v1/customer/profile")
 class UpdateProfileNameApiTest extends BaseApiTest {

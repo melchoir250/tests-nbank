@@ -26,8 +26,8 @@ import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.chrome.ChromeOptions;
 import com.codeborne.selenide.Configuration;
 import constants.DepositLimits;
-import requests.steps.CustomerContext;
-import requests.steps.UserSteps;
+import api.requests.steps.CustomerContext;
+import api.requests.steps.UserSteps;
 
 @DisplayName("UI / Make a Transfer")
 class TransferMoneyUiTest {
