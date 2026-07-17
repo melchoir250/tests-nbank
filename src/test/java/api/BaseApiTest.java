@@ -4,7 +4,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-public abstract class BaseApiTest {
+public class BaseApiTest {
   protected SoftAssertions softly;
 
   @BeforeEach

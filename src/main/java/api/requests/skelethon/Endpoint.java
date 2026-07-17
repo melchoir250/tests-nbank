@@ -52,7 +52,6 @@ public enum Endpoint {
     "/customer/profile",
     UpdateProfileNameRequest.class,
     UpdateProfileNameResponse.class);
-  // @formatter:on
 
   private final String url;
   private final Class<? extends BaseModel> requestModel;

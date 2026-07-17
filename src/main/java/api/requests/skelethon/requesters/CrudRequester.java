@@ -9,10 +9,12 @@ import api.models.BaseModel;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.HttpRequest;
 import api.requests.skelethon.interfaces.CrudEndpointInterface;
+import api.requests.skelethon.interfaces.GetAllEndpointInterface;
 
-public class CrudRequester extends HttpRequest implements CrudEndpointInterface {
+public class CrudRequester extends HttpRequest
+    implements CrudEndpointInterface, GetAllEndpointInterface {
   public CrudRequester(RequestSpecification requestSpecification, Endpoint endpoint,
-    ResponseSpecification responseSpecification) {
+      ResponseSpecification responseSpecification) {
     super(requestSpecification, endpoint, responseSpecification);
   }
 
@@ -24,22 +26,22 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface 
   public ValidatableResponse post(BaseModel model) {
     var body = model == null ? "" : model;
     return given()
-      .spec(requestSpecification)
-      .body(body)
-      .post(endpoint.getUrl())
-      .then()
-      .assertThat()
-      .spec(responseSpecification);
+        .spec(requestSpecification)
+        .body(body)
+        .post(endpoint.getUrl())
+        .then()
+        .assertThat()
+        .spec(responseSpecification);
   }
 
   @Override
   public ValidatableResponse get(int id) {
     return given()
-      .spec(requestSpecification)
-      .get(endpoint.getUrl())
-      .then()
-      .assertThat()
-      .spec(responseSpecification);
+        .spec(requestSpecification)
+        .get(endpoint.getUrl())
+        .then()
+        .assertThat()
+        .spec(responseSpecification);
   }
 
   public ValidatableResponse get() {
@@ -50,12 +52,12 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface 
   public ValidatableResponse put(int id, BaseModel model) {
     var body = model == null ? "" : model;
     return given()
-      .spec(requestSpecification)
-      .body(body)
-      .put(endpoint.getUrl())
-      .then()
-      .assertThat()
-      .spec(responseSpecification);
+        .spec(requestSpecification)
+        .body(body)
+        .put(endpoint.getUrl())
+        .then()
+        .assertThat()
+        .spec(responseSpecification);
   }
 
   public ValidatableResponse put(BaseModel model) {
@@ -65,5 +67,15 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface 
   @Override
   public Object delete(int id) {
     return null;
+  }
+
+  @Override
+  public ValidatableResponse getAll(Class<?> clazz) {
+    return given()
+        .spec(requestSpecification)
+        .get(endpoint.getUrl())
+        .then()
+        .assertThat()
+        .spec(responseSpecification);
   }
 }
