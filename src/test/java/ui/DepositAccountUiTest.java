@@ -15,10 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Alert;
+import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.chrome.ChromeOptions;
 import com.codeborne.selenide.Configuration;
 import constants.DepositLimits;
@@ -36,10 +38,14 @@ class DepositAccountUiTest {
     Configuration.browserVersion = "128.0";
     Configuration.browserSize = "1920x1080";
     Configuration.timeout = 15_000;
+    Configuration.pageLoadTimeout = 60_000;
 
     ChromeOptions options = new ChromeOptions();
+    options.setPageLoadStrategy(PageLoadStrategy.EAGER);
     options.addArguments("--disable-web-security");
-    options.addArguments("--user-data-dir=/tmp/chrome-nosecurity");
+    options.addArguments("--disable-dev-shm-usage");
+    options.addArguments("--no-sandbox");
+    options.addArguments("--user-data-dir=/tmp/chrome-nosecurity-" + UUID.randomUUID());
     options.setCapability("browserVersion", "128.0");
     options.setCapability("selenoid:options", Map.of(
         "enableVNC", true,
