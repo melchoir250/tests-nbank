@@ -15,7 +15,7 @@ import requests.steps.CustomerContext;
 import requests.steps.UserSteps;
 
 @DisplayName("POST /api/v1/accounts/deposit")
-class DepositAccountTest extends BaseApiTest {
+class DepositAccountApiTest extends BaseApiTest {
 
   @ParameterizedTest
   @MethodSource("positiveDepositAmounts")

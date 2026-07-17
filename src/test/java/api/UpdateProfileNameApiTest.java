@@ -11,7 +11,7 @@ import requests.steps.CustomerContext;
 import requests.steps.UserSteps;
 
 @DisplayName("PUT /api/v1/customer/profile")
-class UpdateProfileNameTest extends BaseApiTest {
+class UpdateProfileNameApiTest extends BaseApiTest {
 
   @ParameterizedTest
   @MethodSource("positiveNames")
