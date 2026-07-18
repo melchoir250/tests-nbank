@@ -11,29 +11,30 @@ import ui.pages.UserDashboard;
 @DisplayName("UI / Deposit Money")
 class DepositAccountUiTest extends BaseUiTest {
 
-  @Test
-  @DisplayName("позитивный депозит requests/ui/deposit_tests")
-  void shouldDepositMoneyToAccount() {
-    CustomerContext customer = CustomerContext.create().withAccount();
-    double amount = RandomData.depositAmount();
+    @Test
+    @DisplayName("позитивный депозит requests/ui/deposit_tests")
+    void shouldDepositMoneyToAccount() {
+        CustomerContext customer = CustomerContext.create().withAccount();
+        double amount = RandomData.depositAmount();
 
-    authAsUser(customer.user());
-    new UserDashboard().open()
-        .deposit(customer.account().getAccountNumber(), amount)
-        .checkAlertMessageAndAccept(BankAlert.SUCCESSFULLY_DEPOSITED.getMessage());
-    customer.assertBalance(amount);
-  }
+        authAsUser(customer.user());
+        new UserDashboard().open()
+                .openDeposit()
+                .deposit(customer.account().getAccountNumber(), amount)
+                .checkAlertMessageAndAccept(BankAlert.SUCCESSFULLY_DEPOSITED.getMessage());
+        customer.assertBalance(amount);
+    }
 
-  @Test
-  @DisplayName("депозит сверх лимита requests/ui/deposit_tests")
-  void shouldRejectDepositAboveMaximumLimit() {
-    CustomerContext customer = CustomerContext.create().withAccount();
-    String accountNumber = customer.account().getAccountNumber();
+    @Test
+    @DisplayName("депозит сверх лимита requests/ui/deposit_tests")
+    void shouldRejectDepositAboveMaximumLimit() {
+        CustomerContext customer = CustomerContext.create().withAccount();
 
-    authAsUser(customer.user());
-    new UserDashboard().open()
-        .deposit(accountNumber, DepositLimits.ABOVE_MAX)
-        .checkAlertMessageAndAccept(BankAlert.DEPOSIT_LIMIT_EXCEEDED.getMessage());
-    customer.assertBalance(0);
-  }
+        authAsUser(customer.user());
+        new UserDashboard().open()
+                .openDeposit()
+                .deposit(customer.account().getAccountNumber(), DepositLimits.ABOVE_MAX)
+                .checkAlertMessageAndAccept(BankAlert.DEPOSIT_LIMIT_EXCEEDED.getMessage());
+        customer.assertBalance(0);
+    }
 }

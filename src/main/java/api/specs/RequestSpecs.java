@@ -47,6 +47,10 @@ public class RequestSpecs {
   }
 
   public static String loginAuthHeader(String username, String password) {
+    return getUserAuthHeader(username, password);
+  }
+
+  public static String getUserAuthHeader(String username, String password) {
     return new LoginUserRequester(
         unauthSpec(),
         ResponseSpecs.requestReturnsOK())
