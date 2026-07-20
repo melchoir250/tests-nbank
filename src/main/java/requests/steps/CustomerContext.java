@@ -6,21 +6,25 @@ import models.CreateUserRequest;
 import models.DepositRequest;
 import models.DepositTransferRequest;
 import models.UpdateProfileNameRequest;
+import specs.RequestSpecs;
 
 public final class CustomerContext {
   private final CreateUserRequest user;
+  private final String authToken;
   private final RequestSpecification spec;
   private CreateAccountResponse account;
   private double balance;
 
-  private CustomerContext(CreateUserRequest user, RequestSpecification spec) {
+  private CustomerContext(CreateUserRequest user, String authToken) {
     this.user = user;
-    this.spec = spec;
+    this.authToken = authToken;
+    this.spec = RequestSpecs.authenticated(authToken);
   }
 
   public static CustomerContext create() {
     CreateUserRequest user = AdminSteps.createUser();
-    return new CustomerContext(user, UserSteps.authAs(user));
+    String authToken = RequestSpecs.loginAuthHeader(user.getUsername(), user.getPassword());
+    return new CustomerContext(user, authToken);
   }
 
   public CustomerContext withAccount() {
@@ -44,6 +48,10 @@ public final class CustomerContext {
 
   public CreateUserRequest user() {
     return user;
+  }
+
+  public String authToken() {
+    return authToken;
   }
 
   public RequestSpecification spec() {

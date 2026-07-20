@@ -3,6 +3,7 @@ package specs;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import org.apache.http.HttpHeaders;
 import configs.Config;
 import configs.PROPERTY;
 import io.restassured.builder.RequestSpecBuilder;
@@ -14,14 +15,15 @@ import models.LoginUserRequest;
 import requests.LoginUserRequester;
 
 public class RequestSpecs {
-  private RequestSpecs() {}
+  private RequestSpecs() {
+  }
 
   private static RequestSpecBuilder defaultRequestBuilder() {
     return new RequestSpecBuilder()
-      .setContentType(ContentType.JSON)
-      .setAccept(ContentType.JSON)
-      .addFilters(List.of(new RequestLoggingFilter(), new ResponseLoggingFilter()))
-      .setBaseUri(Config.getProperty(PROPERTY.SERVER) + Config.getProperty(PROPERTY.API_VERSION));
+        .setContentType(ContentType.JSON)
+        .setAccept(ContentType.JSON)
+        .addFilters(List.of(new RequestLoggingFilter(), new ResponseLoggingFilter()))
+        .setBaseUri(Config.getProperty(PROPERTY.SERVER) + Config.getProperty(PROPERTY.API_VERSION));
   }
 
   public static RequestSpecification unauthSpec() {
@@ -30,29 +32,29 @@ public class RequestSpecs {
 
   public static RequestSpecification adminSpec() {
     String credentials = Config.getProperty(PROPERTY.ADMIN_USERNAME)
-      + ":"
-      + Config.getProperty(PROPERTY.ADMIN_PASSWORD);
+        + ":"
+        + Config.getProperty(PROPERTY.ADMIN_PASSWORD);
     String basicAuth = "Basic " + Base64.getEncoder()
-      .encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+        .encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
 
-    return defaultRequestBuilder()
-      .addHeader("Authorization", basicAuth)
-      .build();
+    return authenticated(basicAuth);
   }
 
-  public static RequestSpecification authAsUser(String username, String password) {
-    String userAuthHeader = new LoginUserRequester(
-      RequestSpecs.unauthSpec(),
-      ResponseSpecs.requestReturnsOK())
-        .post(LoginUserRequest.builder()
-          .username(username)
-          .password(password)
-          .build())
-        .extract()
-        .header("Authorization");
-
+  public static RequestSpecification authenticated(String authHeader) {
     return defaultRequestBuilder()
-      .addHeader("Authorization", userAuthHeader)
-      .build();
+        .addHeader(HttpHeaders.AUTHORIZATION, authHeader)
+        .build();
+  }
+
+  public static String loginAuthHeader(String username, String password) {
+    return new LoginUserRequester(
+        unauthSpec(),
+        ResponseSpecs.requestReturnsOK())
+        .post(LoginUserRequest.builder()
+            .username(username)
+            .password(password)
+            .build())
+        .extract()
+        .header(HttpHeaders.AUTHORIZATION);
   }
 }

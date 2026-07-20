@@ -59,12 +59,10 @@
             <artifactId>rgxgen</artifactId>
             <version>${rgxgen.version}</version>
         </dependency>
-        <!-- UI (пока заглушки, тесты добавим отдельно) -->
         <dependency>
             <groupId>com.codeborne</groupId>
             <artifactId>selenide</artifactId>
             <version>${selenide.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

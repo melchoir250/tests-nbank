@@ -15,7 +15,7 @@ import requests.steps.CustomerContext;
 import requests.steps.UserSteps;
 
 @DisplayName("POST /api/v1/accounts/transfer")
-class TransferMoneyTest extends BaseApiTest {
+class TransferMoneyApiTest extends BaseApiTest {
 
   @ParameterizedTest
   @MethodSource("positiveTransferAmounts")

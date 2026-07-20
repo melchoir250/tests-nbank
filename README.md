@@ -45,9 +45,20 @@ tests-nbank/
 └── src/test/java/
     ├── api/                           # API-автотесты
     │   ├── BaseApiTest.java
-    │   ├── DepositAccountTest.java
-    │   ├── TransferMoneyTest.java
-    │   └── UpdateProfileNameTest.java
-    ├── ui/                            # UI-автотесты 
+    │   ├── DepositAccountApiTest.java
+    │   ├── TransferMoneyApiTest.java
+    │   └── UpdateProfileNameApiTest.java
+    ├── ui/                            # UI-автотесты
+    │   ├── BaseUiTest.java
+    │   ├── DepositAccountUiTest.java
+    │   ├── TransferMoneyUiTest.java
+    │   └── UpdateProfileNameUiTest.java
     └── constants/                     # лимиты сумм / имён для параметризации
+```
+
+Запуск:
+
+```bash
+mvn test -Dtest=api.*          # только API
+mvn test -Dtest=ui.*           # только UI
 ```
