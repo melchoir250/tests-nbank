@@ -21,4 +21,8 @@ public class EditProfilePage extends BasePage<EditProfilePage> {
         saveChangesButton.click();
         return this;
     }
+
+    public UserDashboard openDashboard() {
+        return new UserDashboard().open();
+    }
 }

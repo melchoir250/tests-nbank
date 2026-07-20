@@ -66,10 +66,8 @@ public class TransferPage extends BasePage<TransferPage> {
     }
 
     public TransferPage repeatTransfer(String senderAccountNumber, double amount) {
-        String listAmount = String.format(Locale.US, "%.2f", amount);
-
         getTransactions()
-                .findBy(text("TRANSFER_IN - $" + listAmount))
+                .findBy(text(TransactionType.TRANSFER_IN.withAmount(amount)))
                 .$(Selectors.byText("🔁 Repeat"))
                 .click();
 
@@ -77,5 +75,9 @@ public class TransferPage extends BasePage<TransferPage> {
         $(".modal-body #confirmCheck").click();
         $(".modal-footer").$(Selectors.byText("🚀 Send Transfer")).click();
         return this;
+    }
+
+    public UserDashboard openDashboard() {
+        return new UserDashboard().open();
     }
 }

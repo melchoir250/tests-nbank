@@ -7,10 +7,10 @@ import api.generators.RandomData;
 import api.requests.steps.CustomerContext;
 import api.requests.steps.UserSteps;
 import constants.DepositLimits;
-import java.util.Locale;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
+import ui.pages.TransactionType;
 import ui.pages.UserDashboard;
 
 @DisplayName("UI / Make a Transfer")
@@ -43,7 +43,7 @@ class TransferMoneyUiTest extends BaseUiTest {
     @Test
     @DisplayName("перевод сверх лимита requests/ui/transfer_tests")
     void shouldRejectTransferAboveMaximumLimit() {
-        double startBalance = 15_000;
+        double startBalance = DepositLimits.MAX * 3;
         CustomerContext user1 = CustomerContext.create()
                 .withAccount()
                 .withDeposits(DepositLimits.MAX, 3);
@@ -91,8 +91,8 @@ class TransferMoneyUiTest extends BaseUiTest {
     @Test
     @DisplayName("повторный перевод Transfer Again requests/ui/transfer_tests")
     void shouldRepeatTransferAgain() {
-        double depositAmount = 1000;
-        double transferAmount = 50;
+        double depositAmount = RandomData.depositAmount();
+        double transferAmount = RandomData.transferAmount(depositAmount / 2);
         CustomerContext user1 = CustomerContext.create()
                 .withAccount()
                 .withDeposit(depositAmount);
@@ -109,14 +109,13 @@ class TransferMoneyUiTest extends BaseUiTest {
                 .openTransferAgain()
                 .searchTransactions(user2.username())
                 .repeatTransfer(user1.account().getAccountNumber(), transferAmount)
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_AGAIN_SUCCESSFUL.getMessage());
-
-        new UserDashboard().open()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_AGAIN_SUCCESSFUL.getMessage())
+                .openDashboard()
                 .openTransfer()
                 .openTransferAgain()
                 .searchTransactions(user1.username())
                 .getTransactions()
-                .filterBy(text("TRANSFER_OUT - $" + String.format(Locale.US, "%.2f", transferAmount)))
+                .filterBy(text(TransactionType.TRANSFER_OUT.withAmount(transferAmount)))
                 .shouldHave(sizeGreaterThanOrEqual(2));
 
         user1.assertBalance(depositAmount - transferAmount * 2);

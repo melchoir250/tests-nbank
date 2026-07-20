@@ -1,6 +1,9 @@
 package ui.pages;
 
+import static com.codeborne.selenide.Condition.exactText;
+import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.refresh;
 
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
@@ -38,5 +41,12 @@ public class UserDashboard extends BasePage<UserDashboard> {
     public EditProfilePage openEditProfile() {
         profileHeader.click();
         return getPage(EditProfilePage.class);
+    }
+
+    public UserDashboard checkNameDisplayed(String name) {
+        refresh();
+        userName.shouldHave(exactText(name));
+        welcomeText.shouldHave(text(name));
+        return this;
     }
 }

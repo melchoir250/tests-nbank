@@ -1,9 +1,5 @@
 package ui;
 
-import static com.codeborne.selenide.Condition.exactText;
-import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Selenide.refresh;
-
 import api.generators.RandomData;
 import api.requests.steps.CustomerContext;
 import constants.ProfileLimits;
@@ -28,12 +24,9 @@ class UpdateProfileNameUiTest extends BaseUiTest {
         new UserDashboard().open()
                 .openEditProfile()
                 .updateName(newName)
-                .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage());
-
-        UserDashboard dashboard = new UserDashboard().open();
-        refresh();
-        dashboard.getUserName().shouldHave(exactText(newName));
-        dashboard.getWelcomeText().shouldHave(text(newName));
+                .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage())
+                .openDashboard()
+                .checkNameDisplayed(newName);
 
         customer.assertProfileName(newName);
     }

@@ -2,6 +2,7 @@ package api.requests.steps;
 
 import java.util.Arrays;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.data.Offset;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import api.models.CreateAccountResponse;
@@ -167,7 +168,7 @@ public final class UserSteps {
 
     Assertions.assertThat(actualBalance)
         .as("Balance of account %s via GET /customer/accounts", accountId)
-        .isEqualTo(expectedBalance);
+        .isCloseTo(expectedBalance, Offset.offset(0.001));
   }
 
   public static CustomerProfile getProfile(RequestSpecification userSpec) {
