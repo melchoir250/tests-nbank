@@ -7,12 +7,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import constants.DepositLimits;
-import generators.RandomData;
-import models.DepositRequest;
-import models.DepositResponse;
-import models.comparison.ModelAssertions;
-import requests.steps.CustomerContext;
-import requests.steps.UserSteps;
+import api.generators.RandomData;
+import api.models.DepositRequest;
+import api.models.DepositResponse;
+import api.models.comparison.ModelAssertions;
+import api.requests.steps.CustomerContext;
+import api.requests.steps.UserSteps;
 
 @DisplayName("POST /api/v1/accounts/deposit")
 class DepositAccountApiTest extends BaseApiTest {
