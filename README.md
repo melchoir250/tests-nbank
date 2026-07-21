@@ -56,40 +56,8 @@ tests-nbank/
     └── constants/                     # лимиты сумм / имён
 ```
 
----
 
-## Уровни UI
-
-| Уровень | Идея |
-|---------|------|
-| **Junior** | Селекторы и setup в теле теста |
-| **Middle** | Page Objects, общий `BaseUiTest`, fluent-цепочки |
-| **Senior** | `@UserSession` / extensions создают юзера и auth до теста; данные сценария (счета, депозиты) — через `SessionStorage.getSteps()` |
-
-Пример senior-теста:
-
-```java
-@Test
-@UserSession
-void shouldDepositMoneyToAccount() {
-    CreateAccountResponse account =
-        SessionStorage.getSteps().createAccountWithZeroBalance();
-    // UI через page objects…
-}
 ```
-
-`@UserSession(2)` — два пользователя (transfer). Auth по умолчанию под 1-м.
-
----
-
-## Конфиг
-
-`src/main/resources/config.properties`:
-
-- API: `server`, `apiVersion`, `admin.*`
-- UI / Selenoid: `uiRemote`, `uiBaseUrl`, `browser`, `browserVersion`, `browserSize`
-
----
 
 ## Запуск
 
