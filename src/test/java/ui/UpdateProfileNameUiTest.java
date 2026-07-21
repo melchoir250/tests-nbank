@@ -1,7 +1,8 @@
 package ui;
 
 import api.generators.RandomData;
-import api.requests.steps.CustomerContext;
+import common.annotations.UserSession;
+import common.storage.SessionStorage;
 import constants.ProfileLimits;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
@@ -15,12 +16,11 @@ import ui.pages.UserDashboard;
 class UpdateProfileNameUiTest extends BaseUiTest {
 
     @ParameterizedTest
+    @UserSession
     @MethodSource("positiveNames")
     @DisplayName("изменение имени requests/ui/profile_tests")
     void shouldUpdateProfileName(String newName) {
-        CustomerContext customer = CustomerContext.create();
 
-        authAsUser(customer.user());
         new UserDashboard().open()
                 .openEditProfile()
                 .updateName(newName)
@@ -28,7 +28,7 @@ class UpdateProfileNameUiTest extends BaseUiTest {
                 .openDashboard()
                 .checkNameDisplayed(newName);
 
-        customer.assertProfileName(newName);
+        SessionStorage.getSteps().assertProfileName(newName);
     }
 
     static Stream<Arguments> positiveNames() {
@@ -39,18 +39,16 @@ class UpdateProfileNameUiTest extends BaseUiTest {
     }
 
     @ParameterizedTest
+    @UserSession
     @MethodSource("negativeNames")
     @DisplayName("негативный кейс изменение имени requests/ui/profile_tests")
     void shouldRejectInvalidProfileName(String newName) {
-        CustomerContext customer = CustomerContext.create();
-
-        authAsUser(customer.user());
         new UserDashboard().open()
                 .openEditProfile()
                 .updateName(newName)
                 .checkAlertMessageAndAccept(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS.getMessage());
 
-        customer.assertProfileName(null);
+        SessionStorage.getSteps().assertProfileName(null);
     }
 
     static Stream<Arguments> negativeNames() {
