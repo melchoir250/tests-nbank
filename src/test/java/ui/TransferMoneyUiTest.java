@@ -20,7 +20,7 @@ class TransferMoneyUiTest extends BaseUiTest {
 
     @Test
     @UserSession(2)
-    @DisplayName("позитивный перевод requests/ui/transfer_tests")
+    @DisplayName("Переводит деньги между счётами")
     void shouldTransferMoneyBetweenAccounts() {
         double depositAmount = RandomData.depositAmount();
         double transferAmount = RandomData.transferAmount(depositAmount);
@@ -41,7 +41,7 @@ class TransferMoneyUiTest extends BaseUiTest {
 
     @Test
     @UserSession(2)
-    @DisplayName("перевод сверх лимита requests/ui/transfer_tests")
+    @DisplayName("Отклоняет перевод выше максимального лимита")
     void shouldRejectTransferAboveMaximumLimit() {
         double startBalance = DepositLimits.MAX * 3;
 
@@ -61,7 +61,7 @@ class TransferMoneyUiTest extends BaseUiTest {
 
     @Test
     @UserSession(2)
-    @DisplayName("перевод без Confirm requests/ui/transfer_tests")
+    @DisplayName("Отклоняет перевод без подтверждения")
     void shouldRejectTransferWithoutConfirm() {
         double depositAmount = RandomData.depositAmount();
         double transferAmount = RandomData.transferAmount(depositAmount);
@@ -82,7 +82,7 @@ class TransferMoneyUiTest extends BaseUiTest {
 
     @Test
     @UserSession(2)
-    @DisplayName("повторный перевод Transfer Again requests/ui/transfer_tests")
+    @DisplayName("Повторяет перевод через Transfer Again")
     void shouldRepeatTransferAgain() {
         double depositAmount = RandomData.depositAmount();
         double transferAmount = RandomData.transferAmount(depositAmount / 2);

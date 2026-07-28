@@ -15,6 +15,7 @@ class UpdateProfileNameApiTest extends BaseApiTest {
 
   @ParameterizedTest
   @MethodSource("positiveNames")
+  @DisplayName("Принимает допустимое имя профиля")
   void shouldAcceptValidProfileName(String newName) {
     CustomerContext customer = CustomerContext.create();
     customer.assertProfileName(null);
@@ -33,6 +34,7 @@ class UpdateProfileNameApiTest extends BaseApiTest {
 
   @ParameterizedTest
   @MethodSource("negativeNames")
+  @DisplayName("Отклоняет недопустимое имя профиля")
   void shouldRejectInvalidProfileName(String newName) {
     CustomerContext customer = CustomerContext.create();
     customer.assertProfileName(null);

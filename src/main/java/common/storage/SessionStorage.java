@@ -7,21 +7,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public final class SessionStorage {
-  private static final SessionStorage INSTANCE = new SessionStorage();
-
-  private final LinkedHashMap<CreateUserRequest, UserSteps> userStepsMap = new LinkedHashMap<>();
+  private static final ThreadLocal<LinkedHashMap<CreateUserRequest, UserSteps>> USER_STEPS = ThreadLocal
+      .withInitial(LinkedHashMap::new);
 
   private SessionStorage() {
   }
 
   public static void addUsers(List<CreateUserRequest> users) {
     for (CreateUserRequest user : users) {
-      INSTANCE.userStepsMap.put(user, new UserSteps(user.getUsername(), user.getPassword()));
+      USER_STEPS.get().put(user, new UserSteps(user.getUsername(), user.getPassword()));
     }
   }
 
   public static CreateUserRequest getUser(int number) {
-    return new ArrayList<>(INSTANCE.userStepsMap.keySet()).get(number - 1);
+    return new ArrayList<>(USER_STEPS.get().keySet()).get(number - 1);
   }
 
   public static CreateUserRequest getUser() {
@@ -29,7 +28,7 @@ public final class SessionStorage {
   }
 
   public static UserSteps getSteps(int number) {
-    return new ArrayList<>(INSTANCE.userStepsMap.values()).get(number - 1);
+    return new ArrayList<>(USER_STEPS.get().values()).get(number - 1);
   }
 
   public static UserSteps getSteps() {
@@ -37,6 +36,6 @@ public final class SessionStorage {
   }
 
   public static void clear() {
-    INSTANCE.userStepsMap.clear();
+    USER_STEPS.remove();
   }
 }

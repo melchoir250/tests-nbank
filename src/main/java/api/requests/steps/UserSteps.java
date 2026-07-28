@@ -61,6 +61,10 @@ public final class UserSteps {
     assertProfile(spec, username, expectedName);
   }
 
+  public void updateProfileName(String name) {
+    updateProfileName(spec, updateProfileNameRequest(name));
+  }
+
   public static CreateAccountResponse createAccount(RequestSpecification userSpec) {
     return new ValidatedCrudRequester<CreateAccountResponse>(
         userSpec,
@@ -174,13 +178,23 @@ public final class UserSteps {
         .post(request);
   }
 
-  public static void transferExpectingBadRequest(
+  public static void transferExpectingMinAmountError(
       RequestSpecification userSpec,
       DepositTransferRequest request) {
-    new CrudRequester(
-        userSpec,
-        Endpoint.TRANSFER,
-        ResponseSpecs.requestReturnsBadRequest())
+    transferExpecting(userSpec, request, ResponseSpecs.transferAmountTooLow());
+  }
+
+  public static void transferExpectingMaxAmountError(
+      RequestSpecification userSpec,
+      DepositTransferRequest request) {
+    transferExpecting(userSpec, request, ResponseSpecs.transferAmountTooHigh());
+  }
+
+  private static void transferExpecting(
+      RequestSpecification userSpec,
+      DepositTransferRequest request,
+      ResponseSpecification responseSpec) {
+    new CrudRequester(userSpec, Endpoint.TRANSFER, responseSpec)
         .post(request);
   }
 
@@ -239,7 +253,7 @@ public final class UserSteps {
     new CrudRequester(
         userSpec,
         Endpoint.UPDATE_PROFILE,
-        ResponseSpecs.requestReturnsBadRequest())
+        ResponseSpecs.invalidProfileName())
         .put(request);
   }
 
