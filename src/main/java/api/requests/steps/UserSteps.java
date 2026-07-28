@@ -1,6 +1,7 @@
 package api.requests.steps;
 
 import java.util.Arrays;
+import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Offset;
 import io.restassured.specification.RequestSpecification;
@@ -20,7 +21,44 @@ import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 
 public final class UserSteps {
-  private UserSteps() {
+  private final String username;
+  private final RequestSpecification spec;
+
+  public UserSteps(String username, String password) {
+    this.username = username;
+    this.spec = RequestSpecs.authAsUser(username, password);
+  }
+
+  public List<CreateAccountResponse> getAllAccounts() {
+    return Arrays.asList(getAccounts(spec));
+  }
+
+  public CreateAccountResponse createAccountWithZeroBalance() {
+    return createAccountWithZeroBalance(spec);
+  }
+
+  public CreateAccountResponse createAccountWithDeposit(double amount) {
+    CreateAccountResponse account = createAccountWithZeroBalance();
+    depositAndAssertBalance(spec, account.getId(), amount, amount);
+    return account;
+  }
+
+  public CreateAccountResponse createAccountWithDeposits(double chunk, int times) {
+    CreateAccountResponse account = createAccountWithZeroBalance();
+    depositTimes(spec, account.getId(), chunk, times);
+    return account;
+  }
+
+  public DepositTransferResponse transfer(int senderAccountId, int receiverAccountId, double amount) {
+    return transfer(spec, transferRequest(senderAccountId, receiverAccountId, amount));
+  }
+
+  public void assertAccountBalance(int accountId, double expectedBalance) {
+    assertAccountBalance(spec, accountId, expectedBalance);
+  }
+
+  public void assertProfileName(String expectedName) {
+    assertProfile(spec, username, expectedName);
   }
 
   public static CreateAccountResponse createAccount(RequestSpecification userSpec) {

@@ -19,7 +19,7 @@ public class RandomModelGenerator {
     public static <T> T generate(Class<T> clazz) {
         try {
             T instance = clazz.getDeclaredConstructor()
-                .newInstance();
+                    .newInstance();
             for (Field field : getAllFields(clazz)) {
                 field.setAccessible(true);
 
@@ -51,8 +51,8 @@ public class RandomModelGenerator {
         Class<?> type = field.getType();
         if (type.equals(String.class)) {
             return UUID.randomUUID()
-                .toString()
-                .substring(0, 8);
+                    .toString()
+                    .substring(0, 8);
         } else if (type.equals(Integer.class) || type.equals(int.class)) {
             return random.nextInt(1000);
         } else if (type.equals(Long.class) || type.equals(long.class)) {
@@ -72,7 +72,7 @@ public class RandomModelGenerator {
 
     private static Object generateFromRegex(String regex, Class<?> type) {
         String result = RgxGen.parse(regex)
-            .generate();
+                .generate();
         if (type.equals(Integer.class) || type.equals(int.class)) {
             return Integer.parseInt(result);
         } else if (type.equals(Long.class) || type.equals(long.class)) {
@@ -89,11 +89,11 @@ public class RandomModelGenerator {
             Type actualType = pt.getActualTypeArguments()[0];
             if (actualType == String.class) {
                 return List.of(UUID.randomUUID()
-                    .toString()
-                    .substring(0, 5),
-                    UUID.randomUUID()
                         .toString()
-                        .substring(0, 5));
+                        .substring(0, 5),
+                        UUID.randomUUID()
+                                .toString()
+                                .substring(0, 5));
             }
         }
         return Collections.emptyList();

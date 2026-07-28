@@ -7,19 +7,29 @@ import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import java.util.List;
 
 public final class AdminSteps {
-    private AdminSteps() {}
+    private AdminSteps() {
+    }
 
     public static CreateUserRequest createUser() {
         CreateUserRequest userRequest = RandomModelGenerator.generate(CreateUserRequest.class);
 
         new ValidatedCrudRequester<CreateUserResponse>(
-            RequestSpecs.adminSpec(),
-            Endpoint.ADMIN_CREATE_USER,
-            ResponseSpecs.entityWasCreated())
+                RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_CREATE_USER,
+                ResponseSpecs.entityWasCreated())
                 .post(userRequest);
 
         return userRequest;
+    }
+
+    public static List<CreateUserResponse> getAllUsers() {
+        return new ValidatedCrudRequester<CreateUserResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_CREATE_USER,
+                ResponseSpecs.requestReturnsOK())
+                .getAll(CreateUserResponse[].class);
     }
 }

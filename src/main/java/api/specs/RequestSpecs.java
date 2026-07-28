@@ -46,6 +46,10 @@ public class RequestSpecs {
         .build();
   }
 
+  public static RequestSpecification authAsUser(String username, String password) {
+    return authenticated(getUserAuthHeader(username, password));
+  }
+
   public static String loginAuthHeader(String username, String password) {
     return getUserAuthHeader(username, password);
   }

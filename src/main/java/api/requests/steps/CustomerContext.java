@@ -50,10 +50,6 @@ public final class CustomerContext {
     return user;
   }
 
-  public String authToken() {
-    return authToken;
-  }
-
   public RequestSpecification spec() {
     return spec;
   }
