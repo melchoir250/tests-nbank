@@ -19,6 +19,7 @@ class DepositAccountApiTest extends BaseApiTest {
 
   @ParameterizedTest
   @MethodSource("positiveDepositAmounts")
+  @DisplayName("Принимает допустимую сумму пополнения")
   void shouldAcceptValidDepositAmount(double depositAmount) {
     CustomerContext customer = CustomerContext.create()
       .withAccount();
@@ -41,6 +42,7 @@ class DepositAccountApiTest extends BaseApiTest {
 
   @ParameterizedTest
   @MethodSource("belowMinDepositAmounts")
+  @DisplayName("Отклоняет пополнение ниже минимальной суммы")
   void shouldRejectDepositBelowMinimum(double depositAmount) {
     CustomerContext customer = CustomerContext.create()
       .withAccount();
@@ -57,6 +59,7 @@ class DepositAccountApiTest extends BaseApiTest {
   }
 
   @Test
+  @DisplayName("Отклоняет пополнение выше максимальной суммы")
   void shouldRejectDepositAboveMaximum() {
     CustomerContext customer = CustomerContext.create()
       .withAccount();
@@ -68,6 +71,7 @@ class DepositAccountApiTest extends BaseApiTest {
   }
 
   @Test
+  @DisplayName("Отклоняет пополнение несуществующего счёта")
   void shouldRejectDepositToNonExistingAccount() {
     CustomerContext customer = CustomerContext.create()
       .withAccount();
@@ -79,6 +83,7 @@ class DepositAccountApiTest extends BaseApiTest {
   }
 
   @Test
+  @DisplayName("Отклоняет пополнение без авторизации")
   void shouldRejectDepositWithoutAuthorization() {
     UserSteps.depositExpectingUnauthorized(
       UserSteps.depositRequest(

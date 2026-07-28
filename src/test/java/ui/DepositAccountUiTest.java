@@ -15,7 +15,7 @@ class DepositAccountUiTest extends BaseUiTest {
 
     @Test
     @UserSession
-    @DisplayName("позитивный депозит requests/ui/deposit_tests")
+    @DisplayName("Пополняет счёт")
     void shouldDepositMoneyToAccount() {
 
         CreateAccountResponse account = SessionStorage.getSteps().createAccountWithZeroBalance();
@@ -31,7 +31,7 @@ class DepositAccountUiTest extends BaseUiTest {
 
     @Test
     @UserSession
-    @DisplayName("депозит сверх лимита requests/ui/deposit_tests")
+    @DisplayName("Отклоняет пополнение выше максимального лимита")
     void shouldRejectDepositAboveMaximumLimit() {
         CreateAccountResponse account = SessionStorage.getSteps().createAccountWithZeroBalance();
 

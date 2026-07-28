@@ -4,6 +4,7 @@ import api.generators.RandomModelGenerator;
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
@@ -23,6 +24,14 @@ public final class AdminSteps {
                 .post(userRequest);
 
         return userRequest;
+    }
+
+    public static void createUserExpectingInvalidUsername(CreateUserRequest userRequest) {
+        new CrudRequester(
+                RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_CREATE_USER,
+                ResponseSpecs.invalidUsernameErrors())
+                .post(userRequest);
     }
 
     public static List<CreateUserResponse> getAllUsers() {

@@ -1,8 +1,8 @@
 package ui.pages;
 
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.confirm;
 import static com.codeborne.selenide.Selenide.executeJavaScript;
-import static com.codeborne.selenide.Selenide.switchTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import api.models.CreateUserRequest;
@@ -13,7 +13,6 @@ import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import java.util.List;
 import java.util.function.Function;
-import org.openqa.selenium.Alert;
 import ui.elements.BaseElement;
 
 public abstract class BasePage<T extends BasePage> {
@@ -31,9 +30,8 @@ public abstract class BasePage<T extends BasePage> {
   }
 
   public T checkAlertMessageAndAccept(String bankAlert) {
-    Alert alert = switchTo().alert();
-    assertThat(alert.getText()).contains(bankAlert);
-    alert.accept();
+    String actualAlert = confirm();
+    assertThat(actualAlert).contains(bankAlert);
     return (T) this;
   }
 
