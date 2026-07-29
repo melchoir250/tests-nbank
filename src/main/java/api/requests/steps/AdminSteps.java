@@ -1,7 +1,6 @@
 package api.requests.steps;
 
 import api.generators.RandomModelGenerator;
-import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.requests.skelethon.Endpoint;
@@ -50,33 +49,19 @@ public final class AdminSteps {
 
     public static void waitUntilAccountVisible(String accountNumber) {
         waitUntil(
-                () -> getAllAccountsWithoutLogging()
-                        .stream()
-                        .anyMatch(account -> accountNumber.equals(account.getAccountNumber())),
-                "account " + accountNumber + " to appear in GET /admin/users");
+                () -> DataBaseSteps.getAccountByAccountNumber(accountNumber) != null,
+                "account " + accountNumber + " to appear in database");
     }
 
     public static void waitUntilAccountHasTransactions(String accountNumber, int minimumCount) {
         waitUntil(
-                () -> getAllAccountsWithoutLogging()
-                        .stream()
-                        .filter(account -> accountNumber.equals(account.getAccountNumber()))
-                        .map(CreateAccountResponse::getTransactions)
-                        .anyMatch(transactions -> transactions != null && transactions.size() >= minimumCount),
+                () -> {
+                    var account = DataBaseSteps.getAccountByAccountNumber(accountNumber);
+                    return account != null
+                            && DataBaseSteps.countTransactions(account.getId()) >= minimumCount;
+                },
                 "account " + accountNumber + " to have at least " + minimumCount
-                        + " transactions in GET /admin/users");
-    }
-
-    private static List<CreateAccountResponse> getAllAccountsWithoutLogging() {
-        return new ValidatedCrudRequester<CreateUserResponse>(
-                RequestSpecs.adminSpecWithoutLogging(),
-                Endpoint.ADMIN_CREATE_USER,
-                ResponseSpecs.requestReturnsOK())
-                .getAll(CreateUserResponse[].class)
-                .stream()
-                .filter(user -> user.getAccounts() != null)
-                .flatMap(user -> user.getAccounts().stream())
-                .toList();
+                        + " transactions in database");
     }
 
     private static void waitUntil(BooleanSupplier condition, String description) {

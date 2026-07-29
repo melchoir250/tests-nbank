@@ -2,17 +2,16 @@ package api.specs;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
 import org.apache.http.HttpHeaders;
 import api.configs.Config;
 import api.configs.PROPERTY;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import api.models.LoginUserRequest;
-import api.requests.LoginUserRequester;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.CrudRequester;
 
 public class RequestSpecs {
   private RequestSpecs() {
@@ -27,7 +26,7 @@ public class RequestSpecs {
 
   private static RequestSpecBuilder defaultRequestBuilder() {
     return baseRequestBuilder()
-        .addFilters(List.of(new RequestLoggingFilter(), new ResponseLoggingFilter()));
+        .addFilter(new RequestLoggingFilter());
   }
 
   public static RequestSpecification unauthSpec() {
@@ -67,8 +66,9 @@ public class RequestSpecs {
   }
 
   public static String getUserAuthHeader(String username, String password) {
-    return new LoginUserRequester(
+    return new CrudRequester(
         unauthSpec(),
+        Endpoint.LOGIN,
         ResponseSpecs.requestReturnsOK())
         .post(LoginUserRequest.builder()
             .username(username)

@@ -2,6 +2,7 @@ package ui;
 
 import api.generators.RandomData;
 import api.models.CreateAccountResponse;
+import common.annotations.APIVersion;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
 import constants.DepositLimits;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
 import ui.pages.UserDashboard;
 
+@APIVersion("with_database")
 @DisplayName("UI / Deposit Money")
 class DepositAccountUiTest extends BaseUiTest {
 

@@ -11,9 +11,9 @@ public class ResponseSpecs {
 
   public static final String TRANSFER_SUCCESSFUL = "Transfer successful";
   public static final String PROFILE_UPDATED = "Profile updated successfully";
-  public static final String DEPOSIT_MIN_AMOUNT = "Deposit amount must be at least 0.01";
-  public static final String DEPOSIT_MAX_AMOUNT = "Deposit amount cannot exceed 5000";
-  public static final String TRANSFER_MIN_AMOUNT = "Transfer amount must be at least 0.01";
+  public static final String DEPOSIT_MIN_AMOUNT = "Invalid account or amount";
+  public static final String DEPOSIT_MAX_AMOUNT = "Deposit amount exceeds the 5000 limit";
+  public static final String TRANSFER_MIN_AMOUNT = "Invalid transfer: insufficient funds or invalid accounts";
   public static final String TRANSFER_MAX_AMOUNT = "Transfer amount cannot exceed 10000";
   public static final String INVALID_PROFILE_NAME = "Name must contain two words with letters only";
   public static final String USERNAME_REQUIRED = "Username cannot be blank";

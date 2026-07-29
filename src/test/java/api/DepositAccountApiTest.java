@@ -1,5 +1,8 @@
 package api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.Offset.offset;
+
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,13 +10,18 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import constants.DepositLimits;
+import api.dao.AccountDao;
+import api.dao.comparison.DaoAndModelAssertions;
 import api.generators.RandomData;
 import api.models.DepositRequest;
 import api.models.DepositResponse;
 import api.models.comparison.ModelAssertions;
 import api.requests.steps.CustomerContext;
+import api.requests.steps.DataBaseSteps;
 import api.requests.steps.UserSteps;
+import common.annotations.APIVersion;
 
+@APIVersion("with_database")
 @DisplayName("POST /api/v1/accounts/deposit")
 class DepositAccountApiTest extends BaseApiTest {
 
@@ -29,7 +37,8 @@ class DepositAccountApiTest extends BaseApiTest {
 
     ModelAssertions.assertThatModels(depositRequest, deposit)
       .match();
-    customer.assertBalance(depositAmount);
+    DaoAndModelAssertions.assertThat(deposit, DataBaseSteps.getAccountById(customer.accountId()))
+      .match();
   }
 
   static Stream<Arguments> positiveDepositAmounts() {
@@ -46,10 +55,12 @@ class DepositAccountApiTest extends BaseApiTest {
   void shouldRejectDepositBelowMinimum(double depositAmount) {
     CustomerContext customer = CustomerContext.create()
       .withAccount();
+    AccountDao accountBefore = DataBaseSteps.getAccountById(customer.accountId());
 
     UserSteps.depositExpectingMinAmountError(customer.spec(),
       customer.depositRequest(depositAmount));
-    customer.assertBalance(0);
+
+    assertBalanceUnchanged(accountBefore);
   }
 
   static Stream<Arguments> belowMinDepositAmounts() {
@@ -63,11 +74,13 @@ class DepositAccountApiTest extends BaseApiTest {
   void shouldRejectDepositAboveMaximum() {
     CustomerContext customer = CustomerContext.create()
       .withAccount();
+    AccountDao accountBefore = DataBaseSteps.getAccountById(customer.accountId());
 
     UserSteps.depositExpectingMaxAmountError(
       customer.spec(),
       customer.depositRequest(DepositLimits.ABOVE_MAX));
-    customer.assertBalance(0);
+
+    assertBalanceUnchanged(accountBefore);
   }
 
   @Test
@@ -75,19 +88,30 @@ class DepositAccountApiTest extends BaseApiTest {
   void shouldRejectDepositToNonExistingAccount() {
     CustomerContext customer = CustomerContext.create()
       .withAccount();
+    AccountDao accountBefore = DataBaseSteps.getAccountById(customer.accountId());
 
     UserSteps.depositExpectingForbidden(
       customer.spec(),
       UserSteps.depositRequest(DepositLimits.NON_EXISTING_ACCOUNT_ID, RandomData.depositAmount()));
-    customer.assertBalance(0);
+
+    assertBalanceUnchanged(accountBefore);
   }
 
   @Test
   @DisplayName("Отклоняет пополнение без авторизации")
   void shouldRejectDepositWithoutAuthorization() {
-    UserSteps.depositExpectingUnauthorized(
-      UserSteps.depositRequest(
-        DepositLimits.UNAUTHORIZED_TEST_ACCOUNT_ID,
-        RandomData.depositAmount()));
+    CustomerContext customer = CustomerContext.create()
+      .withAccount();
+    AccountDao accountBefore = DataBaseSteps.getAccountById(customer.accountId());
+
+    UserSteps.depositExpectingUnauthorized(customer.depositRequest(RandomData.depositAmount()));
+
+    assertBalanceUnchanged(accountBefore);
+  }
+
+  private static void assertBalanceUnchanged(AccountDao accountBefore) {
+    AccountDao accountAfter = DataBaseSteps.getAccountById(accountBefore.getId());
+    assertThat(accountAfter.getBalance())
+      .isCloseTo(accountBefore.getBalance(), offset(0.001));
   }
 }

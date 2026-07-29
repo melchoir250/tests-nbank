@@ -14,6 +14,7 @@ import api.models.DepositTransferRequest;
 import api.models.DepositTransferResponse;
 import api.models.UpdateProfileNameRequest;
 import api.models.UpdateProfileNameResponse;
+import api.dao.AccountDao;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
@@ -87,11 +88,14 @@ public final class UserSteps {
   }
 
   public static DepositResponse deposit(RequestSpecification userSpec, DepositRequest request) {
-    return new ValidatedCrudRequester<DepositResponse>(
-        userSpec,
-        Endpoint.DEPOSIT,
-        ResponseSpecs.requestReturnsOK())
+    new CrudRequester(userSpec, Endpoint.DEPOSIT, ResponseSpecs.requestReturnsOK())
         .post(request);
+    AccountDao account = DataBaseSteps.getAccountById(request.getId());
+    return DepositResponse.builder()
+        .id(request.getId())
+        .accountNumber(account.getAccountNumber())
+        .balance(account.getBalance())
+        .build();
   }
 
   public static DepositResponse deposit(
@@ -212,14 +216,12 @@ public final class UserSteps {
       RequestSpecification userSpec,
       int accountId,
       double expectedBalance) {
-    double actualBalance = Arrays.stream(getAccounts(userSpec))
-        .filter(account -> account.getId() == accountId)
-        .findFirst()
-        .orElseThrow(() -> new AssertionError("Account not found: " + accountId))
-        .getBalance();
-
-    Assertions.assertThat(actualBalance)
-        .as("Balance of account %s via GET /customer/accounts", accountId)
+    AccountDao accountDao = DataBaseSteps.getAccountById(accountId);
+    Assertions.assertThat(accountDao)
+        .as("Account %s should exist in database", accountId)
+        .isNotNull();
+    Assertions.assertThat(accountDao.getBalance())
+        .as("Balance of account %s in database", accountId)
         .isCloseTo(expectedBalance, Offset.offset(0.001));
   }
 

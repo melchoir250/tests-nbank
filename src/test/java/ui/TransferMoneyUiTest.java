@@ -3,10 +3,13 @@ package ui;
 import static com.codeborne.selenide.CollectionCondition.sizeGreaterThanOrEqual;
 import static com.codeborne.selenide.Condition.text;
 
+import api.dao.AccountDao;
 import api.generators.RandomData;
 import api.models.CreateAccountResponse;
 import api.requests.steps.AdminSteps;
+import api.requests.steps.DataBaseSteps;
 import api.requests.steps.UserSteps;
+import common.annotations.APIVersion;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
 import constants.DepositLimits;
@@ -16,6 +19,7 @@ import ui.pages.BankAlert;
 import ui.pages.TransactionType;
 import ui.pages.UserDashboard;
 
+@APIVersion("with_database")
 @DisplayName("UI / Make a Transfer")
 class TransferMoneyUiTest extends BaseUiTest {
 

@@ -1,5 +1,8 @@
 package api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.Offset.offset;
+
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,13 +10,17 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import constants.DepositLimits;
+import api.dao.AccountDao;
 import api.generators.RandomData;
 import api.models.DepositTransferRequest;
 import api.models.DepositTransferResponse;
 import api.models.comparison.ModelAssertions;
 import api.requests.steps.CustomerContext;
+import api.requests.steps.DataBaseSteps;
 import api.requests.steps.UserSteps;
+import common.annotations.APIVersion;
 
+@APIVersion("with_database")
 @DisplayName("POST /api/v1/accounts/transfer")
 class TransferMoneyApiTest extends BaseApiTest {
 
@@ -32,8 +39,8 @@ class TransferMoneyApiTest extends BaseApiTest {
 
     ModelAssertions.assertThatModels(transferRequest, transfer)
         .match();
-    sender.assertBalance(depositAmount - transferAmount);
-    receiver.assertBalance(transferAmount);
+    assertAccountBalance(sender.accountId(), depositAmount - transferAmount);
+    assertAccountBalance(receiver.accountId(), transferAmount);
   }
 
   static Stream<Arguments> positiveTransferAmounts() {
@@ -60,8 +67,8 @@ class TransferMoneyApiTest extends BaseApiTest {
 
     ModelAssertions.assertThatModels(transferRequest, transfer)
         .match();
-    sender.assertBalance(fundedBalance - transferAmount);
-    receiver.assertBalance(transferAmount);
+    assertAccountBalance(sender.accountId(), fundedBalance - transferAmount);
+    assertAccountBalance(receiver.accountId(), transferAmount);
   }
 
   static Stream<Arguments> transferNearMaxAmounts() {
@@ -80,13 +87,15 @@ class TransferMoneyApiTest extends BaseApiTest {
         .withDeposit(depositAmount);
     CustomerContext receiver = CustomerContext.create()
         .withAccount();
+    AccountDao senderBefore = DataBaseSteps.getAccountById(sender.accountId());
+    AccountDao receiverBefore = DataBaseSteps.getAccountById(receiver.accountId());
 
     UserSteps.transferExpectingMinAmountError(
         sender.spec(),
         sender.transferRequestTo(receiver, transferAmount));
 
-    sender.assertBalance(depositAmount);
-    receiver.assertBalance(0);
+    assertBalanceUnchanged(senderBefore);
+    assertBalanceUnchanged(receiverBefore);
   }
 
   static Stream<Arguments> invalidTransferAmounts() {
@@ -101,15 +110,28 @@ class TransferMoneyApiTest extends BaseApiTest {
     CustomerContext sender = CustomerContext.create()
         .withAccount()
         .withDeposits(DepositLimits.MAX, 3);
-    double fundedBalance = sender.balance();
     CustomerContext receiver = CustomerContext.create()
         .withAccount();
+    AccountDao senderBefore = DataBaseSteps.getAccountById(sender.accountId());
+    AccountDao receiverBefore = DataBaseSteps.getAccountById(receiver.accountId());
 
     UserSteps.transferExpectingMaxAmountError(
         sender.spec(),
         sender.transferRequestTo(receiver, DepositLimits.ABOVE_TRANSFER_MAX));
 
-    sender.assertBalance(fundedBalance);
-    receiver.assertBalance(0);
+    assertBalanceUnchanged(senderBefore);
+    assertBalanceUnchanged(receiverBefore);
+  }
+
+  private static void assertAccountBalance(int accountId, double expectedBalance) {
+    AccountDao accountDao = DataBaseSteps.getAccountById(accountId);
+    assertThat(accountDao).isNotNull();
+    assertThat(accountDao.getBalance()).isCloseTo(expectedBalance, offset(0.001));
+  }
+
+  private static void assertBalanceUnchanged(AccountDao accountBefore) {
+    AccountDao accountAfter = DataBaseSteps.getAccountById(accountBefore.getId());
+    assertThat(accountAfter.getBalance())
+        .isCloseTo(accountBefore.getBalance(), offset(0.001));
   }
 }

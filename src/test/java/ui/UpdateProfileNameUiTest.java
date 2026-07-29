@@ -1,6 +1,9 @@
 package ui;
 
+import api.dao.UserDao;
 import api.generators.RandomData;
+import api.requests.steps.DataBaseSteps;
+import common.annotations.APIVersion;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
 import constants.ProfileLimits;
@@ -12,6 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import ui.pages.BankAlert;
 import ui.pages.UserDashboard;
 
+@APIVersion("with_database")
 @DisplayName("UI / Edit Profile")
 class UpdateProfileNameUiTest extends BaseUiTest {
     private static final String INITIAL_NAME = "Current User";
@@ -32,6 +36,8 @@ class UpdateProfileNameUiTest extends BaseUiTest {
                 .checkNameDisplayed(newName);
 
         SessionStorage.getSteps().assertProfileName(newName);
+        UserDao userDao = DataBaseSteps.getUserByUsername(SessionStorage.getUser().getUsername());
+        softly.assertThat(userDao.getName()).isEqualTo(newName);
     }
 
     static Stream<Arguments> positiveNames() {
@@ -55,6 +61,8 @@ class UpdateProfileNameUiTest extends BaseUiTest {
                 .checkAlertMessageAndAccept(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS.getMessage());
 
         SessionStorage.getSteps().assertProfileName(INITIAL_NAME);
+        UserDao userDao = DataBaseSteps.getUserByUsername(SessionStorage.getUser().getUsername());
+        softly.assertThat(userDao.getName()).isEqualTo(INITIAL_NAME);
     }
 
     static Stream<Arguments> negativeNames() {
