@@ -1,5 +1,7 @@
 package ui.pages;
 
+import static com.codeborne.selenide.Condition.enabled;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
 import com.codeborne.selenide.Selectors;
@@ -19,9 +21,9 @@ public class DepositPage extends BasePage<DepositPage> {
     }
 
     public DepositPage deposit(String accountNumber, double amount) {
-        accountSelector.selectOptionContainingText(accountNumber);
-        amountInput.setValue(String.format(Locale.US, "%.2f", amount));
-        depositButton.click();
+        accountSelector.shouldBe(visible, enabled).selectOptionContainingText(accountNumber);
+        amountInput.shouldBe(visible, enabled).setValue(String.format(Locale.US, "%.2f", amount));
+        depositButton.shouldBe(visible, enabled).click();
         return this;
     }
 }

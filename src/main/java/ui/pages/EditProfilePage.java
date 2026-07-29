@@ -1,5 +1,8 @@
 package ui.pages;
 
+import static com.codeborne.selenide.Condition.enabled;
+import static com.codeborne.selenide.Condition.value;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
 import com.codeborne.selenide.Selectors;
@@ -16,9 +19,14 @@ public class EditProfilePage extends BasePage<EditProfilePage> {
         return "/edit-profile";
     }
 
+    public EditProfilePage waitUntilNameLoaded(String currentName) {
+        nameInput.shouldHave(value(currentName));
+        return this;
+    }
+
     public EditProfilePage updateName(String newName) {
-        nameInput.setValue(newName);
-        saveChangesButton.click();
+        nameInput.shouldBe(visible, enabled).setValue(newName);
+        saveChangesButton.shouldBe(visible, enabled).click();
         return this;
     }
 

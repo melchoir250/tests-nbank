@@ -1,10 +1,13 @@
 package ui;
 
+import static com.codeborne.selenide.Selenide.closeWebDriver;
+
 import api.BaseApiTest;
 import api.models.CreateUserRequest;
 import common.extensions.AdminSessionExtension;
 import common.extensions.BrowserMatchExtension;
 import common.extensions.UserSessionExtension;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 import ui.config.UiTestConfig;
@@ -17,6 +20,11 @@ public class BaseUiTest extends BaseApiTest {
   @BeforeAll
   public static void setupSelenoid() {
     UiTestConfig.apply();
+  }
+
+  @AfterEach
+  public void closeBrowser() {
+    closeWebDriver();
   }
 
   public void authAsUser(String username, String password) {

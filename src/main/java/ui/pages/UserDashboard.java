@@ -1,7 +1,9 @@
 package ui.pages;
 
+import static com.codeborne.selenide.Condition.enabled;
 import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.Condition.text;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.refresh;
 
@@ -24,22 +26,22 @@ public class UserDashboard extends BasePage<UserDashboard> {
     }
 
     public UserDashboard createNewAccount() {
-        createNewAccount.click();
+        createNewAccount.shouldBe(visible, enabled).click();
         return this;
     }
 
     public DepositPage openDeposit() {
-        depositMoney.click();
+        depositMoney.shouldBe(visible, enabled).click();
         return getPage(DepositPage.class);
     }
 
     public TransferPage openTransfer() {
-        makeATransfer.click();
+        makeATransfer.shouldBe(visible, enabled).click();
         return getPage(TransferPage.class);
     }
 
     public EditProfilePage openEditProfile() {
-        profileHeader.click();
+        profileHeader.shouldBe(visible).click();
         return getPage(EditProfilePage.class);
     }
 

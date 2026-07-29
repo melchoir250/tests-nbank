@@ -6,22 +6,31 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import constants.ProfileLimits;
+import api.dao.UserDao;
+import api.dao.comparison.DaoAndModelAssertions;
 import api.generators.RandomData;
+import api.models.CustomerProfile;
 import api.requests.steps.CustomerContext;
+import api.requests.steps.DataBaseSteps;
 import api.requests.steps.UserSteps;
+import common.annotations.APIVersion;
 
+@APIVersion("with_database")
 @DisplayName("PUT /api/v1/customer/profile")
 class UpdateProfileNameApiTest extends BaseApiTest {
 
   @ParameterizedTest
   @MethodSource("positiveNames")
+  @DisplayName("Принимает допустимое имя профиля")
   void shouldAcceptValidProfileName(String newName) {
     CustomerContext customer = CustomerContext.create();
     customer.assertProfileName(null);
 
     UserSteps.updateProfileName(customer.spec(), customer.profileNameRequest(newName));
 
-    customer.assertProfileName(newName);
+    CustomerProfile profile = UserSteps.getProfile(customer.spec());
+    UserDao userDao = DataBaseSteps.getUserByUsername(customer.username());
+    DaoAndModelAssertions.assertThat(profile, userDao).match();
   }
 
   static Stream<Arguments> positiveNames() {
@@ -33,6 +42,7 @@ class UpdateProfileNameApiTest extends BaseApiTest {
 
   @ParameterizedTest
   @MethodSource("negativeNames")
+  @DisplayName("Отклоняет недопустимое имя профиля")
   void shouldRejectInvalidProfileName(String newName) {
     CustomerContext customer = CustomerContext.create();
     customer.assertProfileName(null);
@@ -42,6 +52,8 @@ class UpdateProfileNameApiTest extends BaseApiTest {
       customer.profileNameRequest(newName));
 
     customer.assertProfileName(null);
+    UserDao userDao = DataBaseSteps.getUserByUsername(customer.username());
+    softly.assertThat(userDao.getName()).isNull();
   }
 
   static Stream<Arguments> negativeNames() {
