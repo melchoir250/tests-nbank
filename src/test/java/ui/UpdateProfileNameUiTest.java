@@ -14,15 +14,18 @@ import ui.pages.UserDashboard;
 
 @DisplayName("UI / Edit Profile")
 class UpdateProfileNameUiTest extends BaseUiTest {
+    private static final String INITIAL_NAME = "Current User";
 
     @ParameterizedTest
-    @UserSession
     @MethodSource("positiveNames")
-    @DisplayName("изменение имени requests/ui/profile_tests")
+    @UserSession
+    @DisplayName("Изменяет имя профиля")
     void shouldUpdateProfileName(String newName) {
+        SessionStorage.getSteps().updateProfileName(INITIAL_NAME);
 
         new UserDashboard().open()
                 .openEditProfile()
+                .waitUntilNameLoaded(INITIAL_NAME)
                 .updateName(newName)
                 .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage())
                 .openDashboard()
@@ -39,16 +42,19 @@ class UpdateProfileNameUiTest extends BaseUiTest {
     }
 
     @ParameterizedTest
-    @UserSession
     @MethodSource("negativeNames")
-    @DisplayName("негативный кейс изменение имени requests/ui/profile_tests")
+    @UserSession
+    @DisplayName("Отклоняет недопустимое имя профиля")
     void shouldRejectInvalidProfileName(String newName) {
+        SessionStorage.getSteps().updateProfileName(INITIAL_NAME);
+
         new UserDashboard().open()
                 .openEditProfile()
+                .waitUntilNameLoaded(INITIAL_NAME)
                 .updateName(newName)
                 .checkAlertMessageAndAccept(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS.getMessage());
 
-        SessionStorage.getSteps().assertProfileName(null);
+        SessionStorage.getSteps().assertProfileName(INITIAL_NAME);
     }
 
     static Stream<Arguments> negativeNames() {

@@ -63,6 +63,7 @@ gradlew.bat
 *.properties
 !src/main/resources/config.properties
 !src/main/resources/model-comparison.properties
+!src/test/resources/junit-platform.properties
 *.config
 
 # --- JetBrains caches

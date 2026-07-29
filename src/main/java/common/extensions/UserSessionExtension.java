@@ -6,11 +6,12 @@ import common.annotations.UserSession;
 import common.storage.SessionStorage;
 import java.util.LinkedList;
 import java.util.List;
+import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import ui.pages.BasePage;
 
-public class UserSessionExtension implements BeforeEachCallback {
+public class UserSessionExtension implements BeforeEachCallback, AfterEachCallback {
   @Override
   public void beforeEach(ExtensionContext extensionContext) {
     UserSession annotation = extensionContext.getRequiredTestMethod().getAnnotation(UserSession.class);
@@ -28,5 +29,10 @@ public class UserSessionExtension implements BeforeEachCallback {
     SessionStorage.addUsers(users);
 
     BasePage.authAsUser(SessionStorage.getUser(annotation.auth()));
+  }
+
+  @Override
+  public void afterEach(ExtensionContext extensionContext) {
+    SessionStorage.clear();
   }
 }

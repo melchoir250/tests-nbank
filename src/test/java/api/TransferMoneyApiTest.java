@@ -19,18 +19,19 @@ class TransferMoneyApiTest extends BaseApiTest {
 
   @ParameterizedTest
   @MethodSource("positiveTransferAmounts")
+  @DisplayName("Принимает допустимую сумму перевода")
   void shouldAcceptValidTransferAmount(double depositAmount, double transferAmount) {
     CustomerContext sender = CustomerContext.create()
-      .withAccount()
-      .withDeposit(depositAmount);
+        .withAccount()
+        .withDeposit(depositAmount);
     CustomerContext receiver = CustomerContext.create()
-      .withAccount();
+        .withAccount();
 
     DepositTransferRequest transferRequest = sender.transferRequestTo(receiver, transferAmount);
     DepositTransferResponse transfer = UserSteps.transfer(sender.spec(), transferRequest);
 
     ModelAssertions.assertThatModels(transferRequest, transfer)
-      .match();
+        .match();
     sender.assertBalance(depositAmount - transferAmount);
     receiver.assertBalance(transferAmount);
   }
@@ -38,49 +39,51 @@ class TransferMoneyApiTest extends BaseApiTest {
   static Stream<Arguments> positiveTransferAmounts() {
     double randomDeposit = RandomData.depositAmount();
     return Stream.of(
-      Arguments.of(randomDeposit, RandomData.transferAmount(randomDeposit)),
-      Arguments.of(DepositLimits.MAX, DepositLimits.MIN),
-      Arguments.of(DepositLimits.MAX, DepositLimits.JUST_BELOW_MAX));
+        Arguments.of(randomDeposit, RandomData.transferAmount(randomDeposit)),
+        Arguments.of(DepositLimits.MAX, DepositLimits.MIN),
+        Arguments.of(DepositLimits.MAX, DepositLimits.JUST_BELOW_MAX));
   }
 
   @ParameterizedTest
   @MethodSource("transferNearMaxAmounts")
+  @DisplayName("Принимает перевод около максимального лимита")
   void shouldAcceptTransferNearMaximumLimit(double transferAmount) {
     CustomerContext sender = CustomerContext.create()
-      .withAccount()
-      .withDeposits(DepositLimits.MAX, 2);
+        .withAccount()
+        .withDeposits(DepositLimits.MAX, 2);
     double fundedBalance = sender.balance();
     CustomerContext receiver = CustomerContext.create()
-      .withAccount();
+        .withAccount();
 
     DepositTransferRequest transferRequest = sender.transferRequestTo(receiver, transferAmount);
     DepositTransferResponse transfer = UserSteps.transfer(sender.spec(), transferRequest);
 
     ModelAssertions.assertThatModels(transferRequest, transfer)
-      .match();
+        .match();
     sender.assertBalance(fundedBalance - transferAmount);
     receiver.assertBalance(transferAmount);
   }
 
   static Stream<Arguments> transferNearMaxAmounts() {
     return Stream.of(
-      Arguments.of(DepositLimits.TRANSFER_MAX),
-      Arguments.of(DepositLimits.JUST_BELOW_TRANSFER_MAX));
+        Arguments.of(DepositLimits.TRANSFER_MAX),
+        Arguments.of(DepositLimits.JUST_BELOW_TRANSFER_MAX));
   }
 
   @ParameterizedTest
   @MethodSource("invalidTransferAmounts")
+  @DisplayName("Отклоняет недопустимую сумму перевода")
   void shouldRejectInvalidTransferAmount(double transferAmount) {
     double depositAmount = RandomData.depositAmount();
     CustomerContext sender = CustomerContext.create()
-      .withAccount()
-      .withDeposit(depositAmount);
+        .withAccount()
+        .withDeposit(depositAmount);
     CustomerContext receiver = CustomerContext.create()
-      .withAccount();
+        .withAccount();
 
-    UserSteps.transferExpectingBadRequest(
-      sender.spec(),
-      sender.transferRequestTo(receiver, transferAmount));
+    UserSteps.transferExpectingMinAmountError(
+        sender.spec(),
+        sender.transferRequestTo(receiver, transferAmount));
 
     sender.assertBalance(depositAmount);
     receiver.assertBalance(0);
@@ -88,22 +91,23 @@ class TransferMoneyApiTest extends BaseApiTest {
 
   static Stream<Arguments> invalidTransferAmounts() {
     return Stream.of(
-      Arguments.of(DepositLimits.ZERO),
-      Arguments.of(DepositLimits.NEGATIVE));
+        Arguments.of(DepositLimits.ZERO),
+        Arguments.of(DepositLimits.NEGATIVE));
   }
 
   @Test
+  @DisplayName("Отклоняет перевод выше максимального лимита")
   void shouldRejectTransferAboveMaximumLimit() {
     CustomerContext sender = CustomerContext.create()
-      .withAccount()
-      .withDeposits(DepositLimits.MAX, 3);
+        .withAccount()
+        .withDeposits(DepositLimits.MAX, 3);
     double fundedBalance = sender.balance();
     CustomerContext receiver = CustomerContext.create()
-      .withAccount();
+        .withAccount();
 
-    UserSteps.transferExpectingBadRequest(
-      sender.spec(),
-      sender.transferRequestTo(receiver, DepositLimits.ABOVE_TRANSFER_MAX));
+    UserSteps.transferExpectingMaxAmountError(
+        sender.spec(),
+        sender.transferRequestTo(receiver, DepositLimits.ABOVE_TRANSFER_MAX));
 
     sender.assertBalance(fundedBalance);
     receiver.assertBalance(0);
