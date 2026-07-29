@@ -5,6 +5,7 @@ import static com.codeborne.selenide.Condition.text;
 
 import api.generators.RandomData;
 import api.models.CreateAccountResponse;
+import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
@@ -29,6 +30,7 @@ class TransferMoneyUiTest extends BaseUiTest {
         UserSteps receiver = SessionStorage.getSteps(2);
         CreateAccountResponse from = sender.createAccountWithDeposit(depositAmount);
         CreateAccountResponse to = receiver.createAccountWithZeroBalance();
+        AdminSteps.waitUntilAccountVisible(to.getAccountNumber());
 
         new UserDashboard().open()
                 .openTransfer()
@@ -49,6 +51,7 @@ class TransferMoneyUiTest extends BaseUiTest {
         UserSteps receiver = SessionStorage.getSteps(2);
         CreateAccountResponse from = sender.createAccountWithDeposits(DepositLimits.MAX, 3);
         CreateAccountResponse to = receiver.createAccountWithZeroBalance();
+        AdminSteps.waitUntilAccountVisible(to.getAccountNumber());
 
         new UserDashboard().open()
                 .openTransfer()
@@ -95,14 +98,18 @@ class TransferMoneyUiTest extends BaseUiTest {
         sender.transfer(from.getId(), to.getId(), transferAmount);
         sender.assertAccountBalance(from.getId(), depositAmount - transferAmount);
         receiver.assertAccountBalance(to.getId(), transferAmount);
+        AdminSteps.waitUntilAccountHasTransactions(to.getAccountNumber(), 1);
 
         new UserDashboard().open()
                 .openTransfer()
                 .openTransferAgain()
                 .searchTransactions(SessionStorage.getUser(2).getUsername())
                 .repeatTransfer(from.getAccountNumber(), transferAmount)
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_AGAIN_SUCCESSFUL.getMessage())
-                .openDashboard()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_AGAIN_SUCCESSFUL.getMessage());
+
+        AdminSteps.waitUntilAccountHasTransactions(from.getAccountNumber(), 2);
+
+        new UserDashboard().open()
                 .openTransfer()
                 .openTransferAgain()
                 .searchTransactions(SessionStorage.getUser(1).getUsername())

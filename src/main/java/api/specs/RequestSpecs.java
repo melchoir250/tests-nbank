@@ -18,12 +18,16 @@ public class RequestSpecs {
   private RequestSpecs() {
   }
 
-  private static RequestSpecBuilder defaultRequestBuilder() {
+  private static RequestSpecBuilder baseRequestBuilder() {
     return new RequestSpecBuilder()
         .setContentType(ContentType.JSON)
         .setAccept(ContentType.JSON)
-        .addFilters(List.of(new RequestLoggingFilter(), new ResponseLoggingFilter()))
         .setBaseUri(Config.getProperty(PROPERTY.SERVER) + Config.getProperty(PROPERTY.API_VERSION));
+  }
+
+  private static RequestSpecBuilder defaultRequestBuilder() {
+    return baseRequestBuilder()
+        .addFilters(List.of(new RequestLoggingFilter(), new ResponseLoggingFilter()));
   }
 
   public static RequestSpecification unauthSpec() {
@@ -31,13 +35,21 @@ public class RequestSpecs {
   }
 
   public static RequestSpecification adminSpec() {
+    return authenticated(adminAuthHeader());
+  }
+
+  public static RequestSpecification adminSpecWithoutLogging() {
+    return baseRequestBuilder()
+        .addHeader(HttpHeaders.AUTHORIZATION, adminAuthHeader())
+        .build();
+  }
+
+  private static String adminAuthHeader() {
     String credentials = Config.getProperty(PROPERTY.ADMIN_USERNAME)
         + ":"
         + Config.getProperty(PROPERTY.ADMIN_PASSWORD);
-    String basicAuth = "Basic " + Base64.getEncoder()
+    return "Basic " + Base64.getEncoder()
         .encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
-
-    return authenticated(basicAuth);
   }
 
   public static RequestSpecification authenticated(String authHeader) {

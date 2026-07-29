@@ -8,13 +8,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import com.github.curiousoddman.rgxgen.RgxGen;
 
 public class RandomModelGenerator {
-
-    private static final Random random = new Random();
 
     public static <T> T generate(Class<T> clazz) {
         try {
@@ -54,17 +52,18 @@ public class RandomModelGenerator {
                     .toString()
                     .substring(0, 8);
         } else if (type.equals(Integer.class) || type.equals(int.class)) {
-            return random.nextInt(1000);
+            return ThreadLocalRandom.current().nextInt(1000);
         } else if (type.equals(Long.class) || type.equals(long.class)) {
-            return random.nextLong();
+            return ThreadLocalRandom.current().nextLong();
         } else if (type.equals(Double.class) || type.equals(double.class)) {
-            return random.nextDouble() * 100;
+            return ThreadLocalRandom.current().nextDouble() * 100;
         } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-            return random.nextBoolean();
+            return ThreadLocalRandom.current().nextBoolean();
         } else if (type.equals(List.class)) {
             return generateRandomList(field);
         } else if (type.equals(Date.class)) {
-            return new Date(System.currentTimeMillis() - random.nextInt(1000000000));
+            return new Date(
+                    System.currentTimeMillis() - ThreadLocalRandom.current().nextInt(1000000000));
         } else {
             return generate(type);
         }

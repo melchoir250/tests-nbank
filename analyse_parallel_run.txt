@@ -1,0 +1,24 @@
+# parallel прогон, mvn test, 4 потока
+# 37 тестов, все прошли
+
+# кто в каком потоке работал (кусок лога):
+
+worker-1: TransferMoneyApiTest - 9030 ms
+worker-1: TransferMoneyApiTest - 5252 ms
+worker-2: DepositAccountUiTest - 2249 ms
+worker-3: UpdateProfileNameUiTest - 2804 ms
+worker-4: TransferMoneyUiTest - 5264 ms
+worker-4: TransferMoneyUiTest (transfer again) - 8276 ms
+всего 37 тестов
+
+# по потокам:
+
+worker-1 - 21 тест, ~41730 ms, в основном api (transfer, deposit и тд)
+worker-2 - 9 тестов, ~15374 ms, ui + api
+worker-3 - 4 теста, ~10588 ms, ui update profile
+worker-4 - 3 теста, ~17544 ms, ui transfer
+
+# итог:
+
+maven отработал за 1:15
+самый долгий поток - worker-1 (~42 сек)
