@@ -33,6 +33,10 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest
     return (T) crudRequester.get().extract().as(endpoint.getResponseModel());
   }
 
+  public T getById(long id) {
+    return (T) crudRequester.getById(id).extract().as(endpoint.getResponseModel());
+  }
+
   @Override
   public Object get(int id) {
     return get();

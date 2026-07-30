@@ -14,12 +14,16 @@ import api.models.DepositTransferRequest;
 import api.models.DepositTransferResponse;
 import api.models.UpdateProfileNameRequest;
 import api.models.UpdateProfileNameResponse;
+import api.models.fraud.FraudCheckStatusResponse;
+import api.models.fraud.FraudTransferRequest;
+import api.models.fraud.FraudTransferResponse;
 import api.dao.AccountDao;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import constants.FraudMessages;
 
 public final class UserSteps {
   private final String username;
@@ -200,6 +204,38 @@ public final class UserSteps {
       ResponseSpecification responseSpec) {
     new CrudRequester(userSpec, Endpoint.TRANSFER, responseSpec)
         .post(request);
+  }
+
+  public static FraudTransferRequest fraudTransferRequest(
+      int senderAccountId,
+      int receiverAccountId,
+      double amount) {
+    return FraudTransferRequest.builder()
+        .senderAccountId(senderAccountId)
+        .receiverAccountId(receiverAccountId)
+        .amount(amount)
+        .description(FraudMessages.TRANSFER_DESCRIPTION)
+        .build();
+  }
+
+  public static FraudTransferResponse transferWithFraudCheck(
+      RequestSpecification userSpec,
+      FraudTransferRequest request) {
+    return new ValidatedCrudRequester<FraudTransferResponse>(
+        userSpec,
+        Endpoint.TRANSFER_WITH_FRAUD_CHECK,
+        ResponseSpecs.requestReturnsOK())
+        .post(request);
+  }
+
+  public static FraudCheckStatusResponse getFraudCheckStatus(
+      RequestSpecification userSpec,
+      long transactionId) {
+    return new ValidatedCrudRequester<FraudCheckStatusResponse>(
+        userSpec,
+        Endpoint.FRAUD_CHECK_STATUS,
+        ResponseSpecs.requestReturnsOK())
+        .getById(transactionId);
   }
 
   public static CreateAccountResponse[] getAccounts(RequestSpecification userSpec) {

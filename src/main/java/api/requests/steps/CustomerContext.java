@@ -6,6 +6,7 @@ import api.models.CreateUserRequest;
 import api.models.DepositRequest;
 import api.models.DepositTransferRequest;
 import api.models.UpdateProfileNameRequest;
+import api.models.fraud.FraudTransferRequest;
 import api.specs.RequestSpecs;
 
 public final class CustomerContext {
@@ -13,6 +14,7 @@ public final class CustomerContext {
   private final String authToken;
   private final RequestSpecification spec;
   private CreateAccountResponse account;
+  private CreateAccountResponse secondAccount;
   private double balance;
 
   private CustomerContext(CreateUserRequest user, String authToken) {
@@ -46,6 +48,11 @@ public final class CustomerContext {
     return this;
   }
 
+  public CustomerContext withSecondAccount() {
+    secondAccount = UserSteps.createAccountWithZeroBalance(spec);
+    return this;
+  }
+
   public CreateUserRequest user() {
     return user;
   }
@@ -70,12 +77,24 @@ public final class CustomerContext {
     return user.getUsername();
   }
 
+  public int secondAccountId() {
+    return requireSecondAccount().getId();
+  }
+
   public DepositRequest depositRequest(double amount) {
     return UserSteps.depositRequest(accountId(), amount);
   }
 
   public DepositTransferRequest transferRequestTo(CustomerContext receiver, double amount) {
     return UserSteps.transferRequest(accountId(), receiver.accountId(), amount);
+  }
+
+  public FraudTransferRequest fraudTransferRequestTo(CustomerContext receiver, double amount) {
+    return UserSteps.fraudTransferRequest(accountId(), receiver.accountId(), amount);
+  }
+
+  public FraudTransferRequest fraudTransferToSecondAccount(double amount) {
+    return UserSteps.fraudTransferRequest(accountId(), secondAccountId(), amount);
   }
 
   public UpdateProfileNameRequest profileNameRequest(String name) {
@@ -96,5 +115,12 @@ public final class CustomerContext {
       throw new IllegalStateException("Account is not created. Call withAccount() first.");
     }
     return account;
+  }
+
+  private CreateAccountResponse requireSecondAccount() {
+    if (secondAccount == null) {
+      throw new IllegalStateException("Second account is not created. Call withSecondAccount() first.");
+    }
+    return secondAccount;
   }
 }

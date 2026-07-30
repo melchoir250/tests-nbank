@@ -12,6 +12,9 @@ import api.models.DepositRequest;
 import api.models.DepositResponse;
 import api.models.DepositTransferRequest;
 import api.models.DepositTransferResponse;
+import api.models.fraud.FraudCheckStatusResponse;
+import api.models.fraud.FraudTransferRequest;
+import api.models.fraud.FraudTransferResponse;
 import api.models.LoginUserRequest;
 import api.models.LoginUserResponse;
 import api.models.UpdateProfileNameRequest;
@@ -21,37 +24,45 @@ import api.models.UpdateProfileNameResponse;
 @AllArgsConstructor
 public enum Endpoint {
   ADMIN_CREATE_USER(
-    "/admin/users",
-    CreateUserRequest.class,
-    CreateUserResponse.class),
+      "/admin/users",
+      CreateUserRequest.class,
+      CreateUserResponse.class),
   LOGIN(
-    "/auth/login",
-    LoginUserRequest.class,
-    LoginUserResponse.class),
+      "/auth/login",
+      LoginUserRequest.class,
+      LoginUserResponse.class),
   CREATE_ACCOUNT(
-    "/accounts",
-    CreateAccountRequest.class,
-    CreateAccountResponse.class),
+      "/accounts",
+      CreateAccountRequest.class,
+      CreateAccountResponse.class),
   DEPOSIT(
-    "/accounts/deposit",
-    DepositRequest.class,
-    DepositResponse.class),
+      "/accounts/deposit",
+      DepositRequest.class,
+      DepositResponse.class),
   TRANSFER(
-    "/accounts/transfer",
-    DepositTransferRequest.class,
-    DepositTransferResponse.class),
+      "/accounts/transfer",
+      DepositTransferRequest.class,
+      DepositTransferResponse.class),
+  TRANSFER_WITH_FRAUD_CHECK(
+      "/accounts/transfer-with-fraud-check",
+      FraudTransferRequest.class,
+      FraudTransferResponse.class),
+  FRAUD_CHECK_STATUS(
+      "/accounts/fraud-check/{id}",
+      BaseModel.class,
+      FraudCheckStatusResponse.class),
   CUSTOMER_ACCOUNTS(
-    "/customer/accounts",
-    BaseModel.class,
-    CreateAccountResponse.class),
+      "/customer/accounts",
+      BaseModel.class,
+      CreateAccountResponse.class),
   GET_PROFILE(
-    "/customer/profile",
-    BaseModel.class,
-    CustomerProfile.class),
+      "/customer/profile",
+      BaseModel.class,
+      CustomerProfile.class),
   UPDATE_PROFILE(
-    "/customer/profile",
-    UpdateProfileNameRequest.class,
-    UpdateProfileNameResponse.class);
+      "/customer/profile",
+      UpdateProfileNameRequest.class,
+      UpdateProfileNameResponse.class);
 
   private final String url;
   private final Class<? extends BaseModel> requestModel;

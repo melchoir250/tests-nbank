@@ -48,6 +48,16 @@ public class CrudRequester extends HttpRequest
     return get(0);
   }
 
+  public ValidatableResponse getById(long id) {
+    return given()
+        .spec(requestSpecification)
+        .pathParam("id", id)
+        .get(endpoint.getUrl())
+        .then()
+        .assertThat()
+        .spec(responseSpecification);
+  }
+
   @Override
   public ValidatableResponse put(int id, BaseModel model) {
     var body = model == null ? "" : model;
