@@ -1,16 +1,14 @@
 package api;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.Offset.offset;
-
 import api.dao.AccountDao;
 import api.generators.RandomData;
-import api.models.comparison.ModelAssertions;
 import api.models.fraud.FraudTransferRequest;
 import api.models.fraud.FraudTransferResponse;
 import api.requests.steps.CustomerContext;
 import api.requests.steps.DataBaseSteps;
-import api.requests.steps.UserSteps;
+import api.requests.steps.TransferSteps;
+import api.support.AccountAssertions;
+import api.support.FraudTransferExpectations;
 import common.annotations.APIVersion;
 import common.annotations.FraudCheckMock;
 import common.extensions.FraudCheckWireMockExtension;
@@ -18,6 +16,7 @@ import constants.DepositLimits;
 import constants.FraudMessages;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @APIVersion("with_fraud_check")
@@ -25,188 +24,110 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @DisplayName("POST /api/v1/accounts/transfer-with-fraud-check")
 class TransferWithFraudCheckApiTest extends BaseApiTest {
 
-    @Test
-    @FraudCheckMock
-    @DisplayName("Одобряет перевод с низким риском между пользователями")
-    void shouldApproveTransferBetweenUsers() {
-        double depositAmount = RandomData.depositAmount();
-        double transferAmount = RandomData.transferAmount(depositAmount);
+  @Test
+  @FraudCheckMock
+  @DisplayName("Одобряет перевод с низким риском между пользователями")
+  void shouldApproveTransferBetweenUsers(TestInfo testInfo) {
+    double depositAmount = RandomData.depositAmount();
+    double transferAmount = RandomData.transferAmount(depositAmount);
 
-        CustomerContext sender = CustomerContext.create()
-                .withAccount()
-                .withDeposit(depositAmount);
-        CustomerContext receiver = CustomerContext.create()
-                .withAccount();
+    CustomerContext sender = CustomerContext.create()
+        .withAccount()
+        .withDeposit(depositAmount);
+    CustomerContext receiver = CustomerContext.create()
+        .withAccount();
 
-        FraudTransferRequest request = sender.fraudTransferRequestTo(receiver, transferAmount);
-        FraudTransferResponse response = UserSteps.transferWithFraudCheck(sender.spec(), request);
+    FraudTransferRequest request = sender.fraudTransferRequestTo(receiver, transferAmount);
+    FraudTransferResponse response = TransferSteps.transferWithFraudCheck(sender.spec(), request);
 
-        softly.assertThat(response.getTransactionId()).isPositive();
-        ModelAssertions.assertThatModels(
-                expectedApprovedResponse(response, request),
-                response).match();
-        assertAccountBalance(sender.accountId(), depositAmount - transferAmount);
-        assertAccountBalance(receiver.accountId(), transferAmount);
-    }
+    assertTransferResponse(testInfo, response, request);
+    AccountAssertions.assertBalance(sender.accountId(), depositAmount - transferAmount);
+    AccountAssertions.assertBalance(receiver.accountId(), transferAmount);
+  }
 
-    @Test
-    @FraudCheckMock
-    @DisplayName("Одобряет перевод между своими счетами")
-    void shouldApproveTransferBetweenOwnAccounts() {
-        double depositAmount = RandomData.depositAmount();
-        double transferAmount = RandomData.transferAmount(depositAmount);
+  @Test
+  @FraudCheckMock
+  @DisplayName("Одобряет перевод между своими счетами")
+  void shouldApproveTransferBetweenOwnAccounts(TestInfo testInfo) {
+    double depositAmount = RandomData.depositAmount();
+    double transferAmount = RandomData.transferAmount(depositAmount);
 
-        CustomerContext customer = CustomerContext.create()
-                .withAccount()
-                .withDeposit(depositAmount)
-                .withSecondAccount();
+    CustomerContext customer = CustomerContext.create()
+        .withAccount()
+        .withDeposit(depositAmount)
+        .withSecondAccount();
 
-        FraudTransferRequest request = customer.fraudTransferToSecondAccount(transferAmount);
-        FraudTransferResponse response = UserSteps.transferWithFraudCheck(customer.spec(), request);
+    FraudTransferRequest request = customer.fraudTransferToSecondAccount(transferAmount);
+    FraudTransferResponse response = TransferSteps.transferWithFraudCheck(customer.spec(), request);
 
-        softly.assertThat(response.getTransactionId()).isPositive();
-        ModelAssertions.assertThatModels(
-                expectedApprovedResponse(response, request),
-                response).match();
-        assertAccountBalance(customer.accountId(), depositAmount - transferAmount);
-        assertAccountBalance(customer.secondAccountId(), transferAmount);
-    }
+    assertTransferResponse(testInfo, response, request);
+    AccountAssertions.assertBalance(customer.accountId(), depositAmount - transferAmount);
+    AccountAssertions.assertBalance(customer.secondAccountId(), transferAmount);
+  }
 
-    @Test
-    @FraudCheckMock(status = FraudMessages.STATUS_MANUAL_REVIEW, requiresManualReview = true)
-    @DisplayName("Требует ручной проверки и не меняет балансы")
-    void shouldRequireManualReviewWithoutChangingBalances() {
-        double depositAmount = RandomData.depositAmount();
-        double transferAmount = RandomData.transferAmount(depositAmount);
+  @Test
+  @FraudCheckMock(status = FraudMessages.STATUS_MANUAL_REVIEW, requiresManualReview = true)
+  @DisplayName("Требует ручной проверки и не меняет балансы")
+  void shouldRequireManualReviewWithoutChangingBalances(TestInfo testInfo) {
+    assertPendingTransferDoesNotChangeBalances(testInfo);
+  }
 
-        CustomerContext sender = CustomerContext.create()
-                .withAccount()
-                .withDeposit(depositAmount);
-        CustomerContext receiver = CustomerContext.create()
-                .withAccount();
-        AccountDao senderBefore = DataBaseSteps.getAccountById(sender.accountId());
-        AccountDao receiverBefore = DataBaseSteps.getAccountById(receiver.accountId());
+  @Test
+  @FraudCheckMock(status = FraudMessages.STATUS_VERIFICATION, additionalVerificationRequired = true)
+  @DisplayName("Требует дополнительной верификации и не меняет балансы")
+  void shouldRequireVerificationWithoutChangingBalances(TestInfo testInfo) {
+    assertPendingTransferDoesNotChangeBalances(testInfo);
+  }
 
-        FraudTransferRequest request = sender.fraudTransferRequestTo(receiver, transferAmount);
-        FraudTransferResponse response = UserSteps.transferWithFraudCheck(sender.spec(), request);
+  @Test
+  @FraudCheckMock
+  @DisplayName("Одобряет перевод около максимального лимита")
+  void shouldApproveTransferNearMaximumLimit(TestInfo testInfo) {
+    CustomerContext sender = CustomerContext.create()
+        .withAccount()
+        .withDeposits(DepositLimits.MAX, 2);
+    double fundedBalance = sender.balance();
+    CustomerContext receiver = CustomerContext.create()
+        .withAccount();
 
-        softly.assertThat(response.getTransactionId()).isPositive();
-        ModelAssertions.assertThatModels(
-                expectedPendingResponse(
-                        response,
-                        request,
-                        FraudMessages.STATUS_MANUAL_REVIEW,
-                        FraudMessages.MANUAL_REVIEW,
-                        true,
-                        false),
-                response).match();
-        assertBalanceUnchanged(senderBefore);
-        assertBalanceUnchanged(receiverBefore);
-    }
+    double transferAmount = DepositLimits.JUST_BELOW_TRANSFER_MAX;
+    FraudTransferRequest request = sender.fraudTransferRequestTo(receiver, transferAmount);
+    FraudTransferResponse response = TransferSteps.transferWithFraudCheck(sender.spec(), request);
 
-    @Test
-    @FraudCheckMock(status = FraudMessages.STATUS_VERIFICATION, additionalVerificationRequired = true)
-    @DisplayName("Требует дополнительной верификации и не меняет балансы")
-    void shouldRequireVerificationWithoutChangingBalances() {
-        double depositAmount = RandomData.depositAmount();
-        double transferAmount = RandomData.transferAmount(depositAmount);
+    assertTransferResponse(testInfo, response, request);
+    AccountAssertions.assertBalance(sender.accountId(), fundedBalance - transferAmount);
+    AccountAssertions.assertBalance(receiver.accountId(), transferAmount);
+  }
 
-        CustomerContext sender = CustomerContext.create()
-                .withAccount()
-                .withDeposit(depositAmount);
-        CustomerContext receiver = CustomerContext.create()
-                .withAccount();
-        AccountDao senderBefore = DataBaseSteps.getAccountById(sender.accountId());
-        AccountDao receiverBefore = DataBaseSteps.getAccountById(receiver.accountId());
+  private void assertTransferResponse(
+      TestInfo testInfo,
+      FraudTransferResponse response,
+      FraudTransferRequest request) {
+    FraudCheckMock mock = FraudTransferExpectations.requireMock(testInfo);
 
-        FraudTransferRequest request = sender.fraudTransferRequestTo(receiver, transferAmount);
-        FraudTransferResponse response = UserSteps.transferWithFraudCheck(sender.spec(), request);
+    softly.assertThat(response.getTransactionId()).isPositive();
+    softly.assertThat(response)
+        .usingRecursiveComparison()
+        .isEqualTo(FraudTransferExpectations.expected(mock, response, request));
+  }
 
-        softly.assertThat(response.getTransactionId()).isPositive();
-        ModelAssertions.assertThatModels(
-                expectedPendingResponse(
-                        response,
-                        request,
-                        FraudMessages.STATUS_VERIFICATION,
-                        FraudMessages.VERIFICATION_REQUIRED,
-                        false,
-                        true),
-                response).match();
-        assertBalanceUnchanged(senderBefore);
-        assertBalanceUnchanged(receiverBefore);
-    }
+  private void assertPendingTransferDoesNotChangeBalances(TestInfo testInfo) {
+    double depositAmount = RandomData.depositAmount();
+    double transferAmount = RandomData.transferAmount(depositAmount);
 
-    @Test
-    @FraudCheckMock
-    @DisplayName("Одобряет перевод около максимального лимита")
-    void shouldApproveTransferNearMaximumLimit() {
-        CustomerContext sender = CustomerContext.create()
-                .withAccount()
-                .withDeposits(DepositLimits.MAX, 2);
-        double fundedBalance = sender.balance();
-        CustomerContext receiver = CustomerContext.create()
-                .withAccount();
+    CustomerContext sender = CustomerContext.create()
+        .withAccount()
+        .withDeposit(depositAmount);
+    CustomerContext receiver = CustomerContext.create()
+        .withAccount();
+    AccountDao senderBefore = DataBaseSteps.getAccountById(sender.accountId());
+    AccountDao receiverBefore = DataBaseSteps.getAccountById(receiver.accountId());
 
-        FraudTransferRequest request = sender.fraudTransferRequestTo(
-                receiver,
-                DepositLimits.JUST_BELOW_TRANSFER_MAX);
-        FraudTransferResponse response = UserSteps.transferWithFraudCheck(sender.spec(), request);
+    FraudTransferRequest request = sender.fraudTransferRequestTo(receiver, transferAmount);
+    FraudTransferResponse response = TransferSteps.transferWithFraudCheck(sender.spec(), request);
 
-        softly.assertThat(response.getTransactionId()).isPositive();
-        ModelAssertions.assertThatModels(
-                expectedApprovedResponse(response, request),
-                response).match();
-        assertAccountBalance(sender.accountId(), fundedBalance - DepositLimits.JUST_BELOW_TRANSFER_MAX);
-        assertAccountBalance(receiver.accountId(), DepositLimits.JUST_BELOW_TRANSFER_MAX);
-    }
-
-    private static FraudTransferResponse expectedApprovedResponse(
-            FraudTransferResponse response,
-            FraudTransferRequest request) {
-        return FraudTransferResponse.builder()
-                .status(FraudMessages.STATUS_APPROVED)
-                .message(FraudMessages.APPROVED)
-                .transactionId(response.getTransactionId())
-                .senderAccountId(request.getSenderAccountId())
-                .receiverAccountId(request.getReceiverAccountId())
-                .amount(request.getAmount())
-                .fraudRiskScore(0.2)
-                .fraudReason("Low risk transaction")
-                .requiresVerification(false)
-                .requiresManualReview(false)
-                .build();
-    }
-
-    private static FraudTransferResponse expectedPendingResponse(
-            FraudTransferResponse response,
-            FraudTransferRequest request,
-            String status,
-            String message,
-            boolean requiresManualReview,
-            boolean requiresVerification) {
-        return FraudTransferResponse.builder()
-                .status(status)
-                .message(message)
-                .transactionId(response.getTransactionId())
-                .senderAccountId(request.getSenderAccountId())
-                .receiverAccountId(request.getReceiverAccountId())
-                .amount(request.getAmount())
-                .fraudRiskScore(0.2)
-                .fraudReason("Low risk transaction")
-                .requiresVerification(requiresVerification)
-                .requiresManualReview(requiresManualReview)
-                .build();
-    }
-
-    private static void assertAccountBalance(int accountId, double expectedBalance) {
-        AccountDao accountDao = DataBaseSteps.getAccountById(accountId);
-        assertThat(accountDao).isNotNull();
-        assertThat(accountDao.getBalance()).isCloseTo(expectedBalance, offset(0.001));
-    }
-
-    private static void assertBalanceUnchanged(AccountDao accountBefore) {
-        AccountDao accountAfter = DataBaseSteps.getAccountById(accountBefore.getId());
-        assertThat(accountAfter.getBalance())
-                .isCloseTo(accountBefore.getBalance(), offset(0.001));
-    }
+    assertTransferResponse(testInfo, response, request);
+    AccountAssertions.assertBalanceUnchanged(senderBefore);
+    AccountAssertions.assertBalanceUnchanged(receiverBefore);
+  }
 }

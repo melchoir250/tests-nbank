@@ -1,7 +1,6 @@
 package api;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
-
 import api.dao.UserDao;
 import api.dao.comparison.DaoAndModelAssertions;
 import api.generators.RandomModelGenerator;
@@ -9,8 +8,7 @@ import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.models.comparison.ModelAssertions;
 import api.requests.skelethon.Endpoint;
-import api.requests.skelethon.requesters.CrudRequester;
-import api.requests.skelethon.requesters.ValidatedCrudRequester;
+import api.requests.skelethon.requesters.ApiRequester;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.DataBaseSteps;
 import api.specs.RequestSpecs;
@@ -38,11 +36,11 @@ class CreateUserApiTest {
   void shouldPersistCreatedUserInDatabase() {
     CreateUserRequest createUserRequest = RandomModelGenerator.generate(CreateUserRequest.class);
 
-    CreateUserResponse createUserResponse = new ValidatedCrudRequester<CreateUserResponse>(
+    CreateUserResponse createUserResponse = new ApiRequester(
         RequestSpecs.adminSpec(),
         Endpoint.ADMIN_CREATE_USER,
         ResponseSpecs.entityWasCreated())
-        .post(createUserRequest);
+        .postAndExtract(createUserRequest);
 
     ModelAssertions.assertThatModels(createUserRequest, createUserResponse).match();
 
@@ -57,7 +55,7 @@ class CreateUserApiTest {
     CreateUserRequest invalidUser = RandomModelGenerator.generate(CreateUserRequest.class);
     invalidUser.setUsername("");
 
-    new CrudRequester(
+    new ApiRequester(
         RequestSpecs.adminSpec(),
         Endpoint.ADMIN_CREATE_USER,
         ResponseSpecs.invalidUsernameErrors())

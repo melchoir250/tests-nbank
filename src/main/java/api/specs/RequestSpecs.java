@@ -11,7 +11,7 @@ import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import api.models.LoginUserRequest;
 import api.requests.skelethon.Endpoint;
-import api.requests.skelethon.requesters.CrudRequester;
+import api.requests.skelethon.requesters.ApiRequester;
 
 public class RequestSpecs {
   private RequestSpecs() {
@@ -66,7 +66,7 @@ public class RequestSpecs {
   }
 
   public static String getUserAuthHeader(String username, String password) {
-    return new CrudRequester(
+    return new ApiRequester(
         unauthSpec(),
         Endpoint.LOGIN,
         ResponseSpecs.requestReturnsOK())

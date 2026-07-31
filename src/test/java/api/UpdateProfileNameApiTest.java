@@ -12,7 +12,7 @@ import api.generators.RandomData;
 import api.models.CustomerProfile;
 import api.requests.steps.CustomerContext;
 import api.requests.steps.DataBaseSteps;
-import api.requests.steps.UserSteps;
+import api.requests.steps.ProfileSteps;
 import common.annotations.APIVersion;
 
 @APIVersion("with_database")
@@ -26,9 +26,9 @@ class UpdateProfileNameApiTest extends BaseApiTest {
     CustomerContext customer = CustomerContext.create();
     customer.assertProfileName(null);
 
-    UserSteps.updateProfileName(customer.spec(), customer.profileNameRequest(newName));
+    ProfileSteps.updateProfileName(customer.spec(), customer.profileNameRequest(newName));
 
-    CustomerProfile profile = UserSteps.getProfile(customer.spec());
+    CustomerProfile profile = ProfileSteps.getProfile(customer.spec());
     UserDao userDao = DataBaseSteps.getUserByUsername(customer.username());
     DaoAndModelAssertions.assertThat(profile, userDao).match();
   }
@@ -47,7 +47,7 @@ class UpdateProfileNameApiTest extends BaseApiTest {
     CustomerContext customer = CustomerContext.create();
     customer.assertProfileName(null);
 
-    UserSteps.updateProfileNameExpectingBadRequest(
+    ProfileSteps.updateProfileNameExpectingBadRequest(
       customer.spec(),
       customer.profileNameRequest(newName));
 

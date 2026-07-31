@@ -1,29 +1,10 @@
 package api.requests.steps;
 
-import java.util.Arrays;
 import java.util.List;
-import org.assertj.core.api.Assertions;
-import org.assertj.core.data.Offset;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import api.models.CreateAccountResponse;
-import api.models.CustomerProfile;
-import api.models.DepositRequest;
-import api.models.DepositResponse;
-import api.models.DepositTransferRequest;
 import api.models.DepositTransferResponse;
-import api.models.UpdateProfileNameRequest;
-import api.models.UpdateProfileNameResponse;
-import api.models.fraud.FraudCheckStatusResponse;
-import api.models.fraud.FraudTransferRequest;
-import api.models.fraud.FraudTransferResponse;
-import api.dao.AccountDao;
-import api.requests.skelethon.Endpoint;
-import api.requests.skelethon.requesters.CrudRequester;
-import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
-import api.specs.ResponseSpecs;
-import constants.FraudMessages;
+import io.restassured.specification.RequestSpecification;
 
 public final class UserSteps {
   private final String username;
@@ -34,278 +15,45 @@ public final class UserSteps {
     this.spec = RequestSpecs.authAsUser(username, password);
   }
 
+  public RequestSpecification spec() {
+    return spec;
+  }
+
   public List<CreateAccountResponse> getAllAccounts() {
-    return Arrays.asList(getAccounts(spec));
+    return AccountSteps.getAllAccounts(spec);
   }
 
   public CreateAccountResponse createAccountWithZeroBalance() {
-    return createAccountWithZeroBalance(spec);
+    return AccountSteps.createAccountWithZeroBalance(spec);
   }
 
   public CreateAccountResponse createAccountWithDeposit(double amount) {
     CreateAccountResponse account = createAccountWithZeroBalance();
-    depositAndAssertBalance(spec, account.getId(), amount, amount);
+    DepositSteps.depositAndAssertBalance(spec, account.getId(), amount, amount);
     return account;
   }
 
   public CreateAccountResponse createAccountWithDeposits(double chunk, int times) {
     CreateAccountResponse account = createAccountWithZeroBalance();
-    depositTimes(spec, account.getId(), chunk, times);
+    DepositSteps.depositTimes(spec, account.getId(), chunk, times);
     return account;
   }
 
   public DepositTransferResponse transfer(int senderAccountId, int receiverAccountId, double amount) {
-    return transfer(spec, transferRequest(senderAccountId, receiverAccountId, amount));
+    return TransferSteps.transfer(
+        spec,
+        TransferSteps.transferRequest(senderAccountId, receiverAccountId, amount));
   }
 
   public void assertAccountBalance(int accountId, double expectedBalance) {
-    assertAccountBalance(spec, accountId, expectedBalance);
+    AccountSteps.assertAccountBalance(spec, accountId, expectedBalance);
   }
 
   public void assertProfileName(String expectedName) {
-    assertProfile(spec, username, expectedName);
+    ProfileSteps.assertProfile(spec, username, expectedName);
   }
 
   public void updateProfileName(String name) {
-    updateProfileName(spec, updateProfileNameRequest(name));
-  }
-
-  public static CreateAccountResponse createAccount(RequestSpecification userSpec) {
-    return new ValidatedCrudRequester<CreateAccountResponse>(
-        userSpec,
-        Endpoint.CREATE_ACCOUNT,
-        ResponseSpecs.entityWasCreated())
-        .post();
-  }
-
-  public static CreateAccountResponse createAccountWithZeroBalance(RequestSpecification userSpec) {
-    CreateAccountResponse account = createAccount(userSpec);
-    assertAccountBalance(userSpec, account.getId(), 0);
-    return account;
-  }
-
-  public static DepositRequest depositRequest(int accountId, double amount) {
-    return DepositRequest.builder()
-        .id(accountId)
-        .balance(amount)
-        .build();
-  }
-
-  public static DepositResponse deposit(RequestSpecification userSpec, DepositRequest request) {
-    new CrudRequester(userSpec, Endpoint.DEPOSIT, ResponseSpecs.requestReturnsOK())
-        .post(request);
-    AccountDao account = DataBaseSteps.getAccountById(request.getId());
-    return DepositResponse.builder()
-        .id(request.getId())
-        .accountNumber(account.getAccountNumber())
-        .balance(account.getBalance())
-        .build();
-  }
-
-  public static DepositResponse deposit(
-      RequestSpecification userSpec,
-      int accountId,
-      double amount) {
-    return deposit(userSpec, depositRequest(accountId, amount));
-  }
-
-  public static DepositResponse depositAndAssertBalance(
-      RequestSpecification userSpec,
-      int accountId,
-      double amount,
-      double expectedBalance) {
-    DepositResponse deposit = deposit(userSpec, accountId, amount);
-    assertAccountBalance(userSpec, accountId, expectedBalance);
-    return deposit;
-  }
-
-  public static double depositTimes(
-      RequestSpecification userSpec,
-      int accountId,
-      double amount,
-      int times) {
-    double balance = 0;
-    for (int i = 0; i < times; i++) {
-      balance += amount;
-      depositAndAssertBalance(userSpec, accountId, amount, balance);
-    }
-    return balance;
-  }
-
-  public static void depositExpectingMinAmountError(
-      RequestSpecification userSpec,
-      DepositRequest request) {
-    depositExpecting(userSpec, request, ResponseSpecs.depositAmountTooLow());
-  }
-
-  public static void depositExpectingMaxAmountError(
-      RequestSpecification userSpec,
-      DepositRequest request) {
-    depositExpecting(userSpec, request, ResponseSpecs.depositAmountTooHigh());
-  }
-
-  public static void depositExpectingForbidden(
-      RequestSpecification userSpec,
-      DepositRequest request) {
-    depositExpecting(userSpec, request, ResponseSpecs.unauthorizedAccountAccess());
-  }
-
-  public static void depositExpectingUnauthorized(DepositRequest request) {
-    depositExpecting(
-        RequestSpecs.unauthSpec(),
-        request,
-        ResponseSpecs.requestReturnsUnauthorized());
-  }
-
-  private static void depositExpecting(
-      RequestSpecification userSpec,
-      DepositRequest request,
-      ResponseSpecification responseSpec) {
-    new CrudRequester(userSpec, Endpoint.DEPOSIT, responseSpec)
-        .post(request);
-  }
-
-  public static DepositTransferRequest transferRequest(
-      int senderAccountId,
-      int receiverAccountId,
-      double amount) {
-    return DepositTransferRequest.builder()
-        .senderAccountId(senderAccountId)
-        .receiverAccountId(receiverAccountId)
-        .amount(amount)
-        .build();
-  }
-
-  public static DepositTransferResponse transfer(
-      RequestSpecification userSpec,
-      DepositTransferRequest request) {
-    return new ValidatedCrudRequester<DepositTransferResponse>(
-        userSpec,
-        Endpoint.TRANSFER,
-        ResponseSpecs.transferSuccessful())
-        .post(request);
-  }
-
-  public static void transferExpectingMinAmountError(
-      RequestSpecification userSpec,
-      DepositTransferRequest request) {
-    transferExpecting(userSpec, request, ResponseSpecs.transferAmountTooLow());
-  }
-
-  public static void transferExpectingMaxAmountError(
-      RequestSpecification userSpec,
-      DepositTransferRequest request) {
-    transferExpecting(userSpec, request, ResponseSpecs.transferAmountTooHigh());
-  }
-
-  private static void transferExpecting(
-      RequestSpecification userSpec,
-      DepositTransferRequest request,
-      ResponseSpecification responseSpec) {
-    new CrudRequester(userSpec, Endpoint.TRANSFER, responseSpec)
-        .post(request);
-  }
-
-  public static FraudTransferRequest fraudTransferRequest(
-      int senderAccountId,
-      int receiverAccountId,
-      double amount) {
-    return FraudTransferRequest.builder()
-        .senderAccountId(senderAccountId)
-        .receiverAccountId(receiverAccountId)
-        .amount(amount)
-        .description(FraudMessages.TRANSFER_DESCRIPTION)
-        .build();
-  }
-
-  public static FraudTransferResponse transferWithFraudCheck(
-      RequestSpecification userSpec,
-      FraudTransferRequest request) {
-    return new ValidatedCrudRequester<FraudTransferResponse>(
-        userSpec,
-        Endpoint.TRANSFER_WITH_FRAUD_CHECK,
-        ResponseSpecs.requestReturnsOK())
-        .post(request);
-  }
-
-  public static FraudCheckStatusResponse getFraudCheckStatus(
-      RequestSpecification userSpec,
-      long transactionId) {
-    return new ValidatedCrudRequester<FraudCheckStatusResponse>(
-        userSpec,
-        Endpoint.FRAUD_CHECK_STATUS,
-        ResponseSpecs.requestReturnsOK())
-        .getById(transactionId);
-  }
-
-  public static CreateAccountResponse[] getAccounts(RequestSpecification userSpec) {
-    return new CrudRequester(
-        userSpec,
-        Endpoint.CUSTOMER_ACCOUNTS,
-        ResponseSpecs.requestReturnsOK())
-        .get()
-        .extract()
-        .as(CreateAccountResponse[].class);
-  }
-
-  public static void assertAccountBalance(
-      RequestSpecification userSpec,
-      int accountId,
-      double expectedBalance) {
-    AccountDao accountDao = DataBaseSteps.getAccountById(accountId);
-    Assertions.assertThat(accountDao)
-        .as("Account %s should exist in database", accountId)
-        .isNotNull();
-    Assertions.assertThat(accountDao.getBalance())
-        .as("Balance of account %s in database", accountId)
-        .isCloseTo(expectedBalance, Offset.offset(0.001));
-  }
-
-  public static CustomerProfile getProfile(RequestSpecification userSpec) {
-    return new ValidatedCrudRequester<CustomerProfile>(
-        userSpec,
-        Endpoint.GET_PROFILE,
-        ResponseSpecs.requestReturnsOK())
-        .get();
-  }
-
-  public static UpdateProfileNameRequest updateProfileNameRequest(String name) {
-    return UpdateProfileNameRequest.builder()
-        .name(name)
-        .build();
-  }
-
-  public static UpdateProfileNameResponse updateProfileName(
-      RequestSpecification userSpec,
-      UpdateProfileNameRequest request) {
-    return new ValidatedCrudRequester<UpdateProfileNameResponse>(
-        userSpec,
-        Endpoint.UPDATE_PROFILE,
-        ResponseSpecs.profileUpdated())
-        .put(request);
-  }
-
-  public static void updateProfileNameExpectingBadRequest(
-      RequestSpecification userSpec,
-      UpdateProfileNameRequest request) {
-    new CrudRequester(
-        userSpec,
-        Endpoint.UPDATE_PROFILE,
-        ResponseSpecs.invalidProfileName())
-        .put(request);
-  }
-
-  public static void assertProfile(
-      RequestSpecification userSpec,
-      String expectedUsername,
-      String expectedName) {
-    CustomerProfile profile = getProfile(userSpec);
-
-    Assertions.assertThat(profile.getUsername())
-        .as("Profile username via GET /customer/profile")
-        .isEqualTo(expectedUsername);
-    Assertions.assertThat(profile.getName())
-        .as("Profile name via GET /customer/profile")
-        .isEqualTo(expectedName);
+    ProfileSteps.updateProfileName(spec, ProfileSteps.updateProfileNameRequest(name));
   }
 }

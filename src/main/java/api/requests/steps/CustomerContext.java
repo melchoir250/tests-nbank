@@ -30,26 +30,26 @@ public final class CustomerContext {
   }
 
   public CustomerContext withAccount() {
-    account = UserSteps.createAccountWithZeroBalance(spec);
+    account = AccountSteps.createAccountWithZeroBalance(spec);
     balance = 0;
     return this;
   }
 
   public CustomerContext withDeposit(double amount) {
     requireAccount();
-    UserSteps.depositAndAssertBalance(spec, account.getId(), amount, balance + amount);
+    DepositSteps.depositAndAssertBalance(spec, account.getId(), amount, balance + amount);
     balance += amount;
     return this;
   }
 
   public CustomerContext withDeposits(double chunk, int times) {
     requireAccount();
-    balance = UserSteps.depositTimes(spec, account.getId(), chunk, times);
+    balance = DepositSteps.depositTimes(spec, account.getId(), chunk, times);
     return this;
   }
 
   public CustomerContext withSecondAccount() {
-    secondAccount = UserSteps.createAccountWithZeroBalance(spec);
+    secondAccount = AccountSteps.createAccountWithZeroBalance(spec);
     return this;
   }
 
@@ -82,32 +82,32 @@ public final class CustomerContext {
   }
 
   public DepositRequest depositRequest(double amount) {
-    return UserSteps.depositRequest(accountId(), amount);
+    return DepositSteps.depositRequest(accountId(), amount);
   }
 
   public DepositTransferRequest transferRequestTo(CustomerContext receiver, double amount) {
-    return UserSteps.transferRequest(accountId(), receiver.accountId(), amount);
+    return TransferSteps.transferRequest(accountId(), receiver.accountId(), amount);
   }
 
   public FraudTransferRequest fraudTransferRequestTo(CustomerContext receiver, double amount) {
-    return UserSteps.fraudTransferRequest(accountId(), receiver.accountId(), amount);
+    return TransferSteps.fraudTransferRequest(accountId(), receiver.accountId(), amount);
   }
 
   public FraudTransferRequest fraudTransferToSecondAccount(double amount) {
-    return UserSteps.fraudTransferRequest(accountId(), secondAccountId(), amount);
+    return TransferSteps.fraudTransferRequest(accountId(), secondAccountId(), amount);
   }
 
   public UpdateProfileNameRequest profileNameRequest(String name) {
-    return UserSteps.updateProfileNameRequest(name);
+    return ProfileSteps.updateProfileNameRequest(name);
   }
 
   public void assertBalance(double expected) {
-    UserSteps.assertAccountBalance(spec, accountId(), expected);
+    AccountSteps.assertAccountBalance(spec, accountId(), expected);
     balance = expected;
   }
 
   public void assertProfileName(String expectedName) {
-    UserSteps.assertProfile(spec, username(), expectedName);
+    ProfileSteps.assertProfile(spec, username(), expectedName);
   }
 
   private CreateAccountResponse requireAccount() {

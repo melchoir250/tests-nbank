@@ -1,9 +1,11 @@
 package api;
 
+import api.generators.RandomData;
 import api.models.fraud.FraudCheckStatusResponse;
+import api.models.fraud.FraudTransferRequest;
 import api.models.fraud.FraudTransferResponse;
 import api.requests.steps.CustomerContext;
-import api.requests.steps.UserSteps;
+import api.requests.steps.TransferSteps;
 import common.annotations.APIVersion;
 import common.annotations.FraudCheckMock;
 import common.extensions.FraudCheckWireMockExtension;
@@ -17,48 +19,51 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @DisplayName("GET /api/v1/accounts/fraud-check/{id}")
 class GetFraudCheckStatusApiTest extends BaseApiTest {
 
-    @Test
-    @FraudCheckMock
-    @DisplayName("Возвращает статус после перевода другому пользователю")
-    void shouldReturnStatusAfterTransferToAnotherUser() {
-        CustomerContext sender = CustomerContext.create()
-                .withAccount()
-                .withDeposit(1000);
-        CustomerContext receiver = CustomerContext.create()
-                .withAccount();
+  @Test
+  @FraudCheckMock
+  @DisplayName("Возвращает статус после перевода другому пользователю")
+  void shouldReturnStatusAfterTransferToAnotherUser() {
+    double depositAmount = RandomData.depositAmount();
+    double transferAmount = RandomData.transferAmount(depositAmount);
 
-        FraudTransferResponse transfer = UserSteps.transferWithFraudCheck(
-                sender.spec(),
-                sender.fraudTransferRequestTo(receiver, 100));
+    CustomerContext sender = CustomerContext.create()
+        .withAccount()
+        .withDeposit(depositAmount);
+    CustomerContext receiver = CustomerContext.create()
+        .withAccount();
 
-        FraudCheckStatusResponse status = UserSteps.getFraudCheckStatus(
-                sender.spec(),
-                transfer.getTransactionId());
+    assertFraudStatusAfterTransfer(
+        sender,
+        sender.fraudTransferRequestTo(receiver, transferAmount));
+  }
 
-        softly.assertThat(status.getTransactionId()).isEqualTo(transfer.getTransactionId());
-        softly.assertThat(status.getStatus()).isEqualTo(FraudMessages.FRAUD_STATUS_NOT_REQUIRED);
-        softly.assertThat(status.getNote()).isEqualTo(FraudMessages.FRAUD_NOTE_NOT_REQUIRED);
-    }
+  @Test
+  @FraudCheckMock
+  @DisplayName("Возвращает статус после перевода между своими счетами")
+  void shouldReturnStatusAfterTransferBetweenOwnAccounts() {
+    double depositAmount = RandomData.depositAmount();
+    double transferAmount = RandomData.transferAmount(depositAmount);
 
-    @Test
-    @FraudCheckMock
-    @DisplayName("Возвращает статус после перевода между своими счетами")
-    void shouldReturnStatusAfterTransferBetweenOwnAccounts() {
-        CustomerContext customer = CustomerContext.create()
-                .withAccount()
-                .withDeposit(1000)
-                .withSecondAccount();
+    CustomerContext customer = CustomerContext.create()
+        .withAccount()
+        .withDeposit(depositAmount)
+        .withSecondAccount();
 
-        FraudTransferResponse transfer = UserSteps.transferWithFraudCheck(
-                customer.spec(),
-                customer.fraudTransferToSecondAccount(100));
+    assertFraudStatusAfterTransfer(
+        customer,
+        customer.fraudTransferToSecondAccount(transferAmount));
+  }
 
-        FraudCheckStatusResponse status = UserSteps.getFraudCheckStatus(
-                customer.spec(),
-                transfer.getTransactionId());
+  private void assertFraudStatusAfterTransfer(
+      CustomerContext performer,
+      FraudTransferRequest request) {
+    FraudTransferResponse transfer = TransferSteps.transferWithFraudCheck(performer.spec(), request);
+    FraudCheckStatusResponse status = TransferSteps.getFraudCheckStatus(
+        performer.spec(),
+        transfer.getTransactionId());
 
-        softly.assertThat(status.getTransactionId()).isEqualTo(transfer.getTransactionId());
-        softly.assertThat(status.getStatus()).isEqualTo(FraudMessages.FRAUD_STATUS_NOT_REQUIRED);
-        softly.assertThat(status.getNote()).isEqualTo(FraudMessages.FRAUD_NOTE_NOT_REQUIRED);
-    }
+    softly.assertThat(status.getTransactionId()).isEqualTo(transfer.getTransactionId());
+    softly.assertThat(status.getStatus()).isEqualTo(FraudMessages.FRAUD_STATUS_NOT_REQUIRED);
+    softly.assertThat(status.getNote()).isEqualTo(FraudMessages.FRAUD_NOTE_NOT_REQUIRED);
+  }
 }

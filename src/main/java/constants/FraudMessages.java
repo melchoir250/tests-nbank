@@ -4,6 +4,10 @@ public final class FraudMessages {
   private FraudMessages() {
   }
 
+  public static final String MOCK_STATUS_SUCCESS = "SUCCESS";
+  public static final String MOCK_DECISION_APPROVED = "APPROVED";
+  public static final String MOCK_REASON_LOW_RISK = "Low risk transaction";
+
   public static final String APPROVED = "Transfer approved and processed immediately";
   public static final String MANUAL_REVIEW = "Transfer requires manual review";
   public static final String VERIFICATION_REQUIRED = "Additional verification required";
@@ -16,4 +20,5 @@ public final class FraudMessages {
   public static final String FRAUD_NOTE_NOT_REQUIRED = "This transaction does not require fraud checking.";
 
   public static final String TRANSFER_DESCRIPTION = "Test transfer with fraud check";
+  public static final String DEPOSIT_DESCRIPTION = "Test deposit";
 }
