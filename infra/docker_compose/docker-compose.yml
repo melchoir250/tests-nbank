@@ -1,0 +1,36 @@
+services:
+  backend:
+    image: nobugsme/nbank:with_fraud_check_with_transfer_fix
+    container_name: nbank-fraud
+    ports:
+      - "4111:4111"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/nbank
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      FRAUD_DETECTION_SERVICE_URL: http://host.docker.internal:8089
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: nbank-postgres-fraud
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: nbank
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d nbank" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

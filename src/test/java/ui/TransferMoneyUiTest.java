@@ -5,7 +5,9 @@ import static com.codeborne.selenide.Condition.text;
 
 import api.generators.RandomData;
 import api.models.CreateAccountResponse;
+import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
+import common.annotations.APIVersion;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
 import constants.DepositLimits;
@@ -15,12 +17,13 @@ import ui.pages.BankAlert;
 import ui.pages.TransactionType;
 import ui.pages.UserDashboard;
 
+@APIVersion("with_database")
 @DisplayName("UI / Make a Transfer")
 class TransferMoneyUiTest extends BaseUiTest {
 
     @Test
     @UserSession(2)
-    @DisplayName("позитивный перевод requests/ui/transfer_tests")
+    @DisplayName("Переводит деньги между счётами")
     void shouldTransferMoneyBetweenAccounts() {
         double depositAmount = RandomData.depositAmount();
         double transferAmount = RandomData.transferAmount(depositAmount);
@@ -29,6 +32,7 @@ class TransferMoneyUiTest extends BaseUiTest {
         UserSteps receiver = SessionStorage.getSteps(2);
         CreateAccountResponse from = sender.createAccountWithDeposit(depositAmount);
         CreateAccountResponse to = receiver.createAccountWithZeroBalance();
+        AdminSteps.waitUntilAccountVisible(to.getAccountNumber());
 
         new UserDashboard().open()
                 .openTransfer()
@@ -41,7 +45,7 @@ class TransferMoneyUiTest extends BaseUiTest {
 
     @Test
     @UserSession(2)
-    @DisplayName("перевод сверх лимита requests/ui/transfer_tests")
+    @DisplayName("Отклоняет перевод выше максимального лимита")
     void shouldRejectTransferAboveMaximumLimit() {
         double startBalance = DepositLimits.MAX * 3;
 
@@ -49,6 +53,7 @@ class TransferMoneyUiTest extends BaseUiTest {
         UserSteps receiver = SessionStorage.getSteps(2);
         CreateAccountResponse from = sender.createAccountWithDeposits(DepositLimits.MAX, 3);
         CreateAccountResponse to = receiver.createAccountWithZeroBalance();
+        AdminSteps.waitUntilAccountVisible(to.getAccountNumber());
 
         new UserDashboard().open()
                 .openTransfer()
@@ -61,7 +66,7 @@ class TransferMoneyUiTest extends BaseUiTest {
 
     @Test
     @UserSession(2)
-    @DisplayName("перевод без Confirm requests/ui/transfer_tests")
+    @DisplayName("Отклоняет перевод без подтверждения")
     void shouldRejectTransferWithoutConfirm() {
         double depositAmount = RandomData.depositAmount();
         double transferAmount = RandomData.transferAmount(depositAmount);
@@ -82,7 +87,7 @@ class TransferMoneyUiTest extends BaseUiTest {
 
     @Test
     @UserSession(2)
-    @DisplayName("повторный перевод Transfer Again requests/ui/transfer_tests")
+    @DisplayName("Повторяет перевод через Transfer Again")
     void shouldRepeatTransferAgain() {
         double depositAmount = RandomData.depositAmount();
         double transferAmount = RandomData.transferAmount(depositAmount / 2);
@@ -95,14 +100,18 @@ class TransferMoneyUiTest extends BaseUiTest {
         sender.transfer(from.getId(), to.getId(), transferAmount);
         sender.assertAccountBalance(from.getId(), depositAmount - transferAmount);
         receiver.assertAccountBalance(to.getId(), transferAmount);
+        AdminSteps.waitUntilAccountHasTransactions(to.getAccountNumber(), 1);
 
         new UserDashboard().open()
                 .openTransfer()
                 .openTransferAgain()
                 .searchTransactions(SessionStorage.getUser(2).getUsername())
                 .repeatTransfer(from.getAccountNumber(), transferAmount)
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_AGAIN_SUCCESSFUL.getMessage())
-                .openDashboard()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_AGAIN_SUCCESSFUL.getMessage());
+
+        AdminSteps.waitUntilAccountHasTransactions(from.getAccountNumber(), 2);
+
+        new UserDashboard().open()
                 .openTransfer()
                 .openTransferAgain()
                 .searchTransactions(SessionStorage.getUser(1).getUsername())

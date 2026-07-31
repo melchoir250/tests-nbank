@@ -10,8 +10,8 @@ public class Config {
 
   private Config() {
     try (
-      InputStream inputStream = getClass().getClassLoader()
-        .getResourceAsStream("config.properties")) {
+        InputStream inputStream = getClass().getClassLoader()
+            .getResourceAsStream("config.properties")) {
       if (inputStream == null) {
         throw new RuntimeException("config.properties not found in resources");
       }
@@ -22,6 +22,10 @@ public class Config {
   }
 
   public static String getProperty(String key) {
+    String systemValue = System.getProperty(key);
+    if (systemValue != null && !systemValue.isBlank()) {
+      return systemValue;
+    }
     return INSTANCE.properties.getProperty(key);
   }
 

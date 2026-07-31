@@ -1,6 +1,6 @@
 package api.models;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CustomerProfile extends BaseModel {
   private int id;
   private String username;
   private String password;
   private String name;
   private String role;
-  private List<Object> accounts;
 }

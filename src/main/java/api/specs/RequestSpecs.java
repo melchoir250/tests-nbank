@@ -2,28 +2,31 @@ package api.specs;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
 import org.apache.http.HttpHeaders;
 import api.configs.Config;
 import api.configs.PROPERTY;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import api.models.LoginUserRequest;
-import api.requests.LoginUserRequester;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.ApiRequester;
 
 public class RequestSpecs {
   private RequestSpecs() {
   }
 
-  private static RequestSpecBuilder defaultRequestBuilder() {
+  private static RequestSpecBuilder baseRequestBuilder() {
     return new RequestSpecBuilder()
         .setContentType(ContentType.JSON)
         .setAccept(ContentType.JSON)
-        .addFilters(List.of(new RequestLoggingFilter(), new ResponseLoggingFilter()))
         .setBaseUri(Config.getProperty(PROPERTY.SERVER) + Config.getProperty(PROPERTY.API_VERSION));
+  }
+
+  private static RequestSpecBuilder defaultRequestBuilder() {
+    return baseRequestBuilder()
+        .addFilter(new RequestLoggingFilter());
   }
 
   public static RequestSpecification unauthSpec() {
@@ -31,13 +34,21 @@ public class RequestSpecs {
   }
 
   public static RequestSpecification adminSpec() {
+    return authenticated(adminAuthHeader());
+  }
+
+  public static RequestSpecification adminSpecWithoutLogging() {
+    return baseRequestBuilder()
+        .addHeader(HttpHeaders.AUTHORIZATION, adminAuthHeader())
+        .build();
+  }
+
+  private static String adminAuthHeader() {
     String credentials = Config.getProperty(PROPERTY.ADMIN_USERNAME)
         + ":"
         + Config.getProperty(PROPERTY.ADMIN_PASSWORD);
-    String basicAuth = "Basic " + Base64.getEncoder()
+    return "Basic " + Base64.getEncoder()
         .encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
-
-    return authenticated(basicAuth);
   }
 
   public static RequestSpecification authenticated(String authHeader) {
@@ -55,8 +66,9 @@ public class RequestSpecs {
   }
 
   public static String getUserAuthHeader(String username, String password) {
-    return new LoginUserRequester(
+    return new ApiRequester(
         unauthSpec(),
+        Endpoint.LOGIN,
         ResponseSpecs.requestReturnsOK())
         .post(LoginUserRequest.builder()
             .username(username)

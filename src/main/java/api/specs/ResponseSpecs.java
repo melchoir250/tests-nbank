@@ -6,12 +6,19 @@ import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.specification.ResponseSpecification;
 
 public class ResponseSpecs {
-  private ResponseSpecs() {}
+  private ResponseSpecs() {
+  }
 
   public static final String TRANSFER_SUCCESSFUL = "Transfer successful";
   public static final String PROFILE_UPDATED = "Profile updated successfully";
-  public static final String DEPOSIT_MIN_AMOUNT = "Deposit amount must be at least 0.01";
-  public static final String DEPOSIT_MAX_AMOUNT = "Deposit amount cannot exceed 5000";
+  public static final String DEPOSIT_MIN_AMOUNT = "Invalid account or amount";
+  public static final String DEPOSIT_MAX_AMOUNT = "Deposit amount exceeds the 5000 limit";
+  public static final String TRANSFER_MIN_AMOUNT = "Invalid transfer: insufficient funds or invalid accounts";
+  public static final String TRANSFER_MAX_AMOUNT = "Transfer amount cannot exceed 10000";
+  public static final String INVALID_PROFILE_NAME = "Name must contain two words with letters only";
+  public static final String USERNAME_REQUIRED = "Username cannot be blank";
+  public static final String USERNAME_SIZE = "Username must be between 3 and 15 characters";
+  public static final String USERNAME_PATTERN = "Username must contain only letters, digits, dashes, underscores, and dots";
   public static final String UNAUTHORIZED_ACCOUNT = "Unauthorized access to account";
 
   private static ResponseSpecBuilder defaultResponseBuilder() {
@@ -20,21 +27,21 @@ public class ResponseSpecs {
 
   public static ResponseSpecification entityWasCreated() {
     return defaultResponseBuilder()
-      .expectStatusCode(HttpStatus.SC_CREATED)
-      .build();
+        .expectStatusCode(HttpStatus.SC_CREATED)
+        .build();
   }
 
   public static ResponseSpecification requestReturnsOK() {
     return defaultResponseBuilder()
-      .expectStatusCode(HttpStatus.SC_OK)
-      .build();
+        .expectStatusCode(HttpStatus.SC_OK)
+        .build();
   }
 
   public static ResponseSpecification requestReturnsOKWithMessage(String message) {
     return defaultResponseBuilder()
-      .expectStatusCode(HttpStatus.SC_OK)
-      .expectBody("message", Matchers.equalTo(message))
-      .build();
+        .expectStatusCode(HttpStatus.SC_OK)
+        .expectBody("message", Matchers.equalTo(message))
+        .build();
   }
 
   public static ResponseSpecification transferSuccessful() {
@@ -47,24 +54,24 @@ public class ResponseSpecs {
 
   public static ResponseSpecification requestReturnsBadRequest() {
     return defaultResponseBuilder()
-      .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
-      .build();
+        .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
+        .build();
   }
 
-  public static ResponseSpecification requestReturnsBadRequest(
-    String errorKey,
-    String errorValue) {
+  public static ResponseSpecification requestReturnsBadRequestWithErrors(
+      String errorKey,
+      String... errorValues) {
     return defaultResponseBuilder()
-      .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
-      .expectBody(errorKey, Matchers.equalTo(errorValue))
-      .build();
+        .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
+        .expectBody(errorKey, Matchers.containsInAnyOrder(errorValues))
+        .build();
   }
 
   public static ResponseSpecification requestReturnsBadRequestWithMessage(String message) {
     return defaultResponseBuilder()
-      .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
-      .expectBody(Matchers.equalTo(message))
-      .build();
+        .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
+        .expectBody(Matchers.equalTo(message))
+        .build();
   }
 
   public static ResponseSpecification depositAmountTooLow() {
@@ -75,11 +82,31 @@ public class ResponseSpecs {
     return requestReturnsBadRequestWithMessage(DEPOSIT_MAX_AMOUNT);
   }
 
+  public static ResponseSpecification transferAmountTooLow() {
+    return requestReturnsBadRequestWithMessage(TRANSFER_MIN_AMOUNT);
+  }
+
+  public static ResponseSpecification transferAmountTooHigh() {
+    return requestReturnsBadRequestWithMessage(TRANSFER_MAX_AMOUNT);
+  }
+
+  public static ResponseSpecification invalidProfileName() {
+    return requestReturnsBadRequestWithMessage(INVALID_PROFILE_NAME);
+  }
+
+  public static ResponseSpecification invalidUsernameErrors() {
+    return requestReturnsBadRequestWithErrors(
+        "username",
+        USERNAME_REQUIRED,
+        USERNAME_SIZE,
+        USERNAME_PATTERN);
+  }
+
   public static ResponseSpecification requestReturnsForbiddenWithMessage(String message) {
     return defaultResponseBuilder()
-      .expectStatusCode(HttpStatus.SC_FORBIDDEN)
-      .expectBody(Matchers.equalTo(message))
-      .build();
+        .expectStatusCode(HttpStatus.SC_FORBIDDEN)
+        .expectBody(Matchers.equalTo(message))
+        .build();
   }
 
   public static ResponseSpecification unauthorizedAccountAccess() {
@@ -88,7 +115,7 @@ public class ResponseSpecs {
 
   public static ResponseSpecification requestReturnsUnauthorized() {
     return defaultResponseBuilder()
-      .expectStatusCode(HttpStatus.SC_UNAUTHORIZED)
-      .build();
+        .expectStatusCode(HttpStatus.SC_UNAUTHORIZED)
+        .build();
   }
 }
